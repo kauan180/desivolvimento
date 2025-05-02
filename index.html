@@ -1,0 +1,3445 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gerenciamento de Obras</title>
+    <style>
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        header {
+            background-color: #961c1c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        input, button, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #333;
+            outline: none;
+        }
+        button {
+            background-color: #961c1c;
+            color: white;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c62828;
+        }
+        .menu {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .menu button {
+            flex: 1;
+            margin: 5px;
+        }
+        .screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .screen.active {
+            display: block;
+            opacity: 1;
+        }
+        .user-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .user-menu button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .user-menu img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .profile-menu {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .profile-menu button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .profile-menu button:hover {
+            transform: scale(1.1);
+        }
+        .profile-menu img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+        .profile-menu span {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+        .profile-info {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .controle-prazos-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .controle-prazos-buttons button {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .controle-prazos-buttons button svg {
+            margin-right: 5px;
+        }
+        .controle-prazos-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .controle-prazos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        #calendar {
+            width: 80%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        .visao-geral-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .progresso-obra {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .progresso-obra progress {
+            width: 100%;
+            height: 20px;
+        }
+        .cronograma-prazos {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .indicadores, .riscos-desafios {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .indicador, .risco {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .tabela-colaboradores {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+            text-align: left;
+        }
+        .tabela-colaboradores thead tr {
+            background-color: #961c1c;
+            color: white;
+            text-align: left;
+        }
+        .tabela-colaboradores th, .tabela-colaboradores td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+        .tabela-colaboradores tbody tr {
+            border-bottom: 1px solid #ddd;
+        }
+        .tabela-colaboradores tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        .tabela-colaboradores tbody tr:last-of-type {
+            border-bottom: 2px solid #961c1c;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+        .obras-importadas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .obra-importada {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .folder {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #e0e0e0;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .folder:hover {
+            background-color: #d0d0d0;
+        }
+        .file {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        #assinaturaDigitalScreen {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #canvasAssinatura {
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        #canvasAssinatura:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #listaAssinaturas div {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #listaAssinaturas div:hover {
+            transform: scale(1.05);
+        }
+
+        button {
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .estrela {
+            font-size: 30px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .estrela.selecionada {
+            color: #FFD700;
+        }
+
+        .estrela:hover {
+            color: #FFD700;
+        }
+    </style>
+    <style>
+        /* Tabela de Produção Semanal - versão compacta/mobile */
+        #tabelaApontamentoProducao {
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(50,50,50,0.08);
+            background: #fff;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        #tabelaApontamentoProducao th, #tabelaApontamentoProducao td {
+            border: 1px solid #e0e0e0;
+            padding: 0;
+            vertical-align: top;
+        }
+        #tabelaApontamentoProducao th {
+            background: #23272f;
+            color: #f4f4f4;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 4px;
+            border-right: 1px solid #fff;
+            letter-spacing: 0.5px;
+        }
+        #tabelaApontamentoProducao tr:nth-child(even) td {
+            background: #f7f8fa;
+        }
+        #tabelaApontamentoProducao tr:nth-child(odd) td {
+            background: #f1f2f6;
+        }
+        #tabelaApontamentoProducao td {
+            min-width: 80px;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            font-size: 12px;
+        }
+        #tabelaApontamentoProducao td:first-child {
+            background: #f6f7fa;
+            font-weight: bold;
+            color: #23272f;
+            border-right: 2px solid #23272f;
+            min-width: 70px;
+            text-align: left;
+            padding-left: 6px;
+            font-size: 12px;
+        }
+        #tabelaApontamentoProducao td > div[contenteditable] {
+            background: #fff;
+            margin: 2px 0;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            min-height: 18px;
+            padding: 4px 5px;
+            font-size: 12px;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(50,50,50,0.03);
+        }
+        #tabelaApontamentoProducao td > div[contenteditable]:focus {
+            border: 2px solid #23272f;
+            background: #f6f7fa;
+            outline: none;
+            box-shadow: 0 2px 8px #23272f22;
+        }
+        #tabelaApontamentoProducao input[type="date"] {
+            width: 95%;
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            margin: 2px 0;
+            background: #f6f7fa;
+            font-size: 12px;
+            color: #23272f;
+            transition: border 0.2s;
+        }
+        #tabelaApontamentoProducao input[type="date"]:focus {
+            border: 2px solid #23272f;
+            background: #fff;
+        }
+        #tabelaApontamentoProducao td:not(:last-child) {
+            box-shadow: 1px 0 0 #e0e0e0;
+        }
+        #tabelaApontamentoProducao td:hover {
+            background: #e9ecef;
+            transition: background 0.2s;
+        }
+        /* Mobile: rolagem horizontal e fonte menor */
+        @media (max-width: 600px) {
+            #tabelaApontamentoProducao, #tabelaApontamentoProducao th, #tabelaApontamentoProducao td {
+                font-size: 11px;
+                min-width: 60px;
+            }
+            #tabelaApontamentoProducao th, #tabelaApontamentoProducao td {
+                padding: 4px 2px;
+            }
+            #tabelaApontamentoProducao td > div[contenteditable] {
+                font-size: 11px;
+                min-height: 14px;
+                padding: 2px 3px;
+            }
+            #tabelaApontamentoProducao input[type="date"] {
+                font-size: 11px;
+                padding: 2px;
+            }
+        }
+    </style>
+    <style>
+        /* Estilo moderno e responsivo para Controle de Prazos */
+        #controlePrazosScreen {
+            background: #f7f9fb;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(33,60,100,0.08);
+            padding: 24px 12px 32px 12px;
+            max-width: 700px;
+            margin: 24px auto;
+        }
+        #controlePrazosScreen h2 {
+            color: #22304a;
+            font-size: 2rem;
+            margin-bottom: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .controle-prazos-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(33,60,100,0.10);
+            padding: 18px 12px;
+            margin-top: 10px;
+        }
+        .controle-prazos-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .controle-prazos-header h3 {
+            color: #22304a;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .controle-prazos-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .controle-prazos-buttons button {
+            background: #22304a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .controle-prazos-buttons button:hover {
+            background: #34495e;
+        }
+        #controlePrazosScreen label {
+            font-size: 15px;
+            color: #34495e;
+            margin-top: 10px;
+            margin-bottom: 3px;
+            display: block;
+        }
+        #controlePrazosScreen select,
+        #controlePrazosScreen input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cfd8dc;
+            font-size: 15px;
+            margin-bottom: 10px;
+            background: #f7f9fb;
+            color: #22304a;
+            transition: border 0.2s;
+        }
+        #controlePrazosScreen select:focus,
+        #controlePrazosScreen input[type="date"]:focus {
+            border: 2px solid #22304a;
+            background: #fff;
+            outline: none;
+        }
+        #controlePrazosScreen input[type="checkbox"] {
+            accent-color: #22304a;
+            margin-right: 6px;
+        }
+        #calendar {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(33,60,100,0.10);
+            padding: 10px;
+            margin: 24px auto 0 auto;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .fc {
+            font-size: 14px;
+            background: #fff;
+            border-radius: 12px;
+        }
+        .fc-toolbar-title {
+            color: #22304a;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .fc-button {
+            background: #22304a !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 6px !important;
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            margin: 0 2px !important;
+            transition: background 0.2s;
+        }
+        .fc-button:hover, .fc-button:focus {
+            background: #34495e !important;
+        }
+        .fc-daygrid-day-number {
+            color: #22304a;
+            font-weight: 500;
+        }
+        .fc-day-today {
+            background: #e3eafc !important;
+        }
+        .fc-event {
+            background: linear-gradient(90deg, #3498db 60%, #22304a 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            box-shadow: 0 2px 8px rgba(33,60,100,0.10);
+            padding: 2px 8px !important;
+        }
+        .fc-daygrid-event-dot {
+            border-color: #3498db !important;
+        }
+        #prazosOutput {
+            margin-top: 18px;
+            background: #f7f9fb;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            color: #22304a;
+            box-shadow: 0 1px 4px rgba(33,60,100,0.05);
+        }
+        @media (max-width: 700px) {
+            #controlePrazosScreen {
+                padding: 8px 2vw 16px 2vw;
+                max-width: 100vw;
+            }
+            .controle-prazos-container {
+                padding: 10px 2vw;
+            }
+            #calendar {
+                padding: 2px;
+            }
+        }
+        @media (max-width: 500px) {
+            #controlePrazosScreen h2 {
+                font-size: 1.2rem;
+            }
+            .controle-prazos-header h3 {
+                font-size: 1rem;
+            }
+            .fc-toolbar-title {
+                font-size: 1rem;
+            }
+        }
+        </style>
+        <style>
+            /* Visual inspirado em apontamentoProducaoScreen para a tabela de programação semanal */
+            #tabelaProgramacaoVeiculos {
+                border-radius: 10px;
+                overflow-x: auto;
+                box-shadow: 0 2px 8px rgba(50,50,50,0.08);
+                background: #fff;
+                margin-bottom: 16px;
+                font-size: 13px;
+            }
+            #tabelaProgramacaoVeiculos th, #tabelaProgramacaoVeiculos td {
+                border: 1px solid #e0e0e0;
+                padding: 0;
+                vertical-align: top;
+            }
+            #tabelaProgramacaoVeiculos th {
+                background: #23272f;
+                color: #f4f4f4;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 8px 4px;
+                border-right: 1px solid #fff;
+                letter-spacing: 0.5px;
+            }
+            #tabelaProgramacaoVeiculos tr:nth-child(even) td {
+                background: #f7f8fa;
+            }
+            #tabelaProgramacaoVeiculos tr:nth-child(odd) td {
+                background: #f1f2f6;
+            }
+            #tabelaProgramacaoVeiculos td {
+                min-width: 120px;
+                border-right: 1px solid #e0e0e0;
+                border-bottom: 1px solid #e0e0e0;
+                position: relative;
+                font-size: 12px;
+                padding: 0;
+            }
+            #tabelaProgramacaoVeiculos td:first-child {
+                background: #f6f7fa;
+                font-weight: bold;
+                color: #23272f;
+                border-right: 2px solid #23272f;
+                min-width: 90px;
+                text-align: left;
+                padding-left: 6px;
+                font-size: 13px;
+                vertical-align: middle;
+            }
+            #tabelaProgramacaoVeiculos td > div.cell-content {
+                background: linear-gradient(120deg, #fff 80%, #f7f8fa 100%);
+                margin: 6px 4px;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+                min-height: 70px;
+                padding: 8px 10px 6px 10px;
+                font-size: 12px;
+                box-shadow: 0 1px 4px rgba(50,50,50,0.04);
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                transition: border 0.2s, box-shadow 0.2s;
+            }
+            #tabelaProgramacaoVeiculos td > div.cell-content:focus-within {
+                border: 2px solid #23272f;
+                background: #f6f7fa;
+                outline: none;
+                box-shadow: 0 2px 8px #23272f22;
+            }
+            #tabelaProgramacaoVeiculos .cell-label {
+                font-size: 11px;
+                color: #961c1c;
+                font-weight: bold;
+                margin-bottom: 2px;
+                letter-spacing: 0.2px;
+            }
+            #tabelaProgramacaoVeiculos .cell-label.lider,
+            #tabelaProgramacaoVeiculos .cell-label.ajudantes {
+                color: #34495e;
+            }
+            #tabelaProgramacaoVeiculos .cell-edit {
+                border-bottom: 1px solid #ccc;
+                min-height: 18px;
+                margin-bottom: 4px;
+                padding: 2px 4px;
+                border-radius: 4px;
+                background: #fff;
+                transition: border 0.2s;
+            }
+            #tabelaProgramacaoVeiculos .cell-edit:focus {
+                border-bottom: 2px solid #961c1c;
+                background: #f6f7fa;
+                outline: none;
+            }
+            #tabelaProgramacaoVeiculos .cell-edit.ajudantes {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+            #tabelaProgramacaoVeiculos input[type="date"] {
+                width: 95%;
+                padding: 4px;
+                border-radius: 6px;
+                border: 1px solid #bbb;
+                margin: 2px 0;
+                background: #f6f7fa;
+                font-size: 12px;
+                color: #23272f;
+                transition: border 0.2s;
+            }
+            #tabelaProgramacaoVeiculos input[type="date"]:focus {
+                border: 2px solid #23272f;
+                background: #fff;
+            }
+            #tabelaProgramacaoVeiculos td:not(:last-child) {
+                box-shadow: 1px 0 0 #e0e0e0;
+            }
+            #tabelaProgramacaoVeiculos td:hover {
+                background: #e9ecef;
+                transition: background 0.2s;
+            }
+            @media (max-width: 700px) {
+                #tabelaProgramacaoVeiculos, #tabelaProgramacaoVeiculos th, #tabelaProgramacaoVeiculos td {
+                    font-size: 11px;
+                    min-width: 80px;
+                }
+                #tabelaProgramacaoVeiculos th, #tabelaProgramacaoVeiculos td {
+                    padding: 4px 2px;
+                }
+                #tabelaProgramacaoVeiculos td > div.cell-content {
+                    font-size: 11px;
+                    min-height: 40px;
+                    padding: 4px 3px;
+                }
+                #tabelaProgramacaoVeiculos input[type="date"] {
+                    font-size: 11px;
+                    padding: 2px;
+                }
+            }
+            </style>
+    <style>
+        /* Tabela de Pendências de Produção - compacta/mobile e tom azul escuro */
+        #tabelaPendenciasProducao {
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(33,60,100,0.10);
+            background: #fff;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        #tabelaPendenciasProducao th, #tabelaPendenciasProducao td {
+            border: 1px solid #e0e0e0;
+            padding: 0;
+            vertical-align: top;
+        }
+        #tabelaPendenciasProducao th {
+            background: #22304a;
+            color: #f4f4f4;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 4px;
+            border-right: 1px solid #fff;
+            letter-spacing: 0.5px;
+        }
+        #tabelaPendenciasProducao tr:nth-child(even) td {
+            background: #f5f8fc;
+        }
+        #tabelaPendenciasProducao tr:nth-child(odd) td {
+            background: #e9eef5;
+        }
+        #tabelaPendenciasProducao td {
+            min-width: 80px;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            font-size: 12px;
+        }
+        #tabelaPendenciasProducao td:first-child {
+            background: #f3f6fa;
+            font-weight: bold;
+            color: #22304a;
+            border-right: 2px solid #22304a;
+            min-width: 70px;
+            text-align: left;
+            padding-left: 6px;
+            font-size: 12px;
+        }
+        #tabelaPendenciasProducao td > div[contenteditable] {
+            background: #fff;
+            margin: 2px 0;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            min-height: 18px;
+            padding: 4px 5px;
+            font-size: 12px;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(33,60,100,0.03);
+        }
+        #tabelaPendenciasProducao td > div[contenteditable]:focus {
+            border: 2px solid #22304a;
+            background: #f3f6fa;
+            outline: none;
+            box-shadow: 0 2px 8px #22304a22;
+        }
+        #tabelaPendenciasProducao input[type="date"] {
+            width: 95%;
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            margin: 2px 0;
+            background: #f3f6fa;
+            font-size: 12px;
+            color: #22304a;
+            transition: border 0.2s;
+        }
+        #tabelaPendenciasProducao input[type="date"]:focus {
+            border: 2px solid #22304a;
+            background: #fff;
+        }
+        #tabelaPendenciasProducao td:not(:last-child) {
+            box-shadow: 1px 0 0 #e0e0e0;
+        }
+        #tabelaPendenciasProducao td:hover {
+            background: #e0e7f1;
+            transition: background 0.2s;
+        }
+        @media (max-width: 600px) {
+            #tabelaPendenciasProducao, #tabelaPendenciasProducao th, #tabelaPendenciasProducao td {
+                font-size: 11px;
+                min-width: 60px;
+            }
+            #tabelaPendenciasProducao th, #tabelaPendenciasProducao td {
+                padding: 4px 2px;
+            }
+            #tabelaPendenciasProducao td > div[contenteditable] {
+                font-size: 11px;
+                min-height: 14px;
+                padding: 2px 3px;
+            }
+            #tabelaPendenciasProducao input[type="date"] {
+                font-size: 11px;
+                padding: 2px;
+            }
+        }
+    </style>
+    
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="www/css/index.css">
+</head>
+<body>
+    <header>
+        Gerenciamento de Obras
+        <div class="user-menu">
+            <button onclick="showScreen('profileMenuScreen')">
+                <img src="https://img.icons8.com/ios-filled/50/000000/user-menu-male.png" alt="Menu de Perfis">
+            </button>
+        </div>
+    </header>
+    <div class="menu">
+        <button onclick="showScreen('loginScreen')">Login</button>
+        <button onclick="showScreen('obrasScreen')">Obras</button>
+        <button onclick="showScreen('arquivosImportadosScreen')">Arquivos Importados</button>
+        <button onclick="showScreen('paineisRotinaScreen')">Paineis de Rotina</button>
+    </div>
+    <div class="container">
+        <div id="loginScreen" class="screen active">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Usuário">
+            <input type="password" id="password" placeholder="Senha">
+            <button onclick="login()">Entrar</button>
+        </div>
+    </div>
+        <div id="obrasScreen" class="screen">
+            <h2>Cadastro de Obras</h2>
+            <input type="text" id="obraNome" placeholder="Nome da Obra">
+            <input type="text" id="obraEndereco" placeholder="Endereço da Obra">
+            <input type="date" id="dataInicio" placeholder="Data de Início">
+            <input type="date" id="previsaoTermino" placeholder="Previsão de Término">
+            <textarea id="obraDescricao" placeholder="Descrição da Obra"></textarea>
+            <button onclick="salvarObra()">Salvar Obra</button>
+            <h3>Importar Planilha de Obras</h3>
+            <input type="file" id="fileUpload" accept=".xlsx, .xls" multiple />
+            <button onclick="importarPlanilha()">Importar Planilha</button>
+            <h3>Buscar Obras</h3>
+            <input type="text" id="buscarObraInput" placeholder="Digite o nome da obra" onkeyup="buscarObra()">
+            <div id="obrasOutput"></div>
+            <h3>Obras Importadas</h3>
+            <div id="obrasImportadas" class="obras-importadas-container"></div> <!-- Contêiner para exibir as obras importadas -->
+            <button onclick="showScreen('loginScreen')">Voltar</button>
+        </div>
+        <div id="arquivosImportadosScreen" class="screen">
+            <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px; font-weight: bold;">Arquivos Importados</h2>
+            <div class="importacao-container" style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                <!-- Área de Importação -->
+                <div class="importar-arquivos" style="margin-bottom: 20px;">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Importar Arquivos</h3>
+                    <input id="inputArquivo" type="file" multiple style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                    <button onclick="importarArquivos()" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Importar</button>
+                </div>
+        
+                <!-- Lista de Arquivos Importados -->
+                <div class="arquivos-importados">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Arquivos Importados</h3>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background-color: white; border-radius: 12px; overflow: hidden;">
+                        <thead>
+                            <tr style="background-color: #961c1c; color: white; text-align: left;">
+                                <th style="padding: 15px; font-weight: bold;">Nome do Arquivo</th>
+                                <th style="padding: 15px; font-weight: bold;">Tamanho</th>
+                                <th style="padding: 15px; font-weight: bold; text-align: center;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaArquivos" style="background-color: #fff5f5;">
+                            <!-- Arquivos importados serão listados aqui -->
+                        </tbody>
+                    </table>
+                </div>
+        
+                <!-- Exibição do Conteúdo -->
+                <div id="conteudoArquivo" style="margin-top: 30px; display: none;">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Visualização do Arquivo</h3>
+                    <div id="visualizadorArquivo" style="border: 1px solid #ccc; border-radius: 8px; overflow: hidden; height: 500px; background: #f5f5f5;">
+                        <!-- O conteúdo do arquivo será exibido aqui -->
+                    </div>
+                    <!-- Adicione o botão de salvar no visualizador de arquivos -->
+<div id="conteudoArquivo" style="margin-top: 30px; display: none;">
+    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Visualização do Arquivo</h3>
+    <div id="visualizadorArquivo" style="border: 1px solid #ccc; border-radius: 8px; overflow: hidden; height: 500px; background: #f5f5f5;">
+        <!-- O conteúdo do arquivo será exibido aqui -->
+    </div>
+    <button id="salvarEdicao" onclick="salvarEdicaoArquivo()" style="margin-top: 10px; padding: 12px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; display: none;">
+        <img src="https://img.icons8.com/ios-filled/20/ffffff/save.png" alt="Salvar" style="margin-right: 5px;"> Salvar Edição
+    </button>
+</div>
+                </div>
+            </div>
+            <button onclick="showScreen('menuScreen')" style="margin-top: 20px; padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Voltar ao Menu</button>
+        </div>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+        <script>
+            const arquivosImportados = [];
+        
+            function importarArquivos() {
+                const input = document.getElementById("inputArquivo");
+                const listaArquivos = document.getElementById("listaArquivos");
+        
+                if (input.files.length === 0) {
+                    alert("Por favor, selecione pelo menos um arquivo para importar.");
+                    return;
+                }
+        
+                Array.from(input.files).forEach((file) => {
+                    if (arquivosImportados.some((arquivo) => arquivo.name === file.name)) {
+                        alert(`O arquivo "${file.name}" já foi importado.`);
+                        return;
+                    }
+        
+                    arquivosImportados.push(file);
+        
+                    const linha = document.createElement("tr");
+                    const urlArquivo = URL.createObjectURL(file);
+        
+                    linha.innerHTML = `
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">
+                            <a href="${urlArquivo}" target="_blank" style="color: #961c1c; text-decoration: none;">${file.name}</a>
+                        </td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">${(file.size / 1024).toFixed(2)} KB</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; text-align: center;">
+            <button onclick="exibirConteudoArquivo('${file.name}', '${file.type}')" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Exibir</button>
+            <button onclick="editarArquivo('${file.name}')" style="padding: 8px 15px; background-color: #FFA500; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Editar</button>
+
+                            <button onclick="removerArquivo('${file.name}', this)" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Excluir</button>
+                        </td>
+                    `;
+        
+                    listaArquivos.appendChild(linha);
+                });
+        
+                input.value = "";
+            }
+        
+            function removerArquivo(nomeArquivo, botao) {
+                const index = arquivosImportados.findIndex((arquivo) => arquivo.name === nomeArquivo);
+                if (index !== -1) {
+                    arquivosImportados.splice(index, 1);
+                }
+        
+                const linha = botao.parentElement.parentElement;
+                linha.remove();
+            }
+        
+            function editarArquivo(nomeArquivo) {
+    const arquivo = arquivosImportados.find((file) => file.name === nomeArquivo);
+    
+    if (!arquivo) {
+        alert("Arquivo não encontrado.");
+        return;
+    }
+
+    const visualizador = document.getElementById("visualizadorArquivo");
+    const conteudoDiv = document.getElementById("conteudoArquivo");
+    const salvarBotao = document.getElementById("salvarEdicao");
+
+    // Exibe o PDF em um iframe para edição
+    const urlArquivo = URL.createObjectURL(arquivo);
+    visualizador.innerHTML = `<iframe src="${urlArquivo}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+    conteudoDiv.style.display = "block";
+    salvarBotao.style.display = "inline-block"; // Exibe o botão de salvar
+}
+
+function salvarEdicaoArquivo() {
+    const nomeArquivo = "arquivo_editado.pdf"; // Nome do arquivo editado
+    const subPasta = "subpasta_edicoes"; // Nome da subpasta
+
+    // Simula a criação de uma subpasta e o salvamento do arquivo
+    alert(`As edições do arquivo foram salvas em: ${subPasta}/${nomeArquivo}`);
+
+    // Aqui você pode implementar a lógica para salvar o arquivo no servidor ou localmente
+}
+        </script>
+        <div id="detalhesObraScreen" class="screen">
+            <h2>Detalhes da Obra</h2>
+            <div id="detalhesObra"></div>
+            <button onclick="showScreen('painelObraScreen')">Painel da Obra</button>
+            <button onclick="showScreen('obrasScreen')">Voltar</button>
+        </div>
+        <div id="painelObraScreen" class="screen">
+            <h2>Painel da Obra</h2>
+            <button onclick="showScreen('rdoScreen')">Registro de Atividades</button>
+            <button onclick="showScreen('equipesScreen')">Gerenciamento de Equipes</button>
+            <button onclick="showScreen('relatoriosScreen')">Relatórios e Avaliações</button>
+            <button onclick="showScreen('visaoGeralScreen')">Visão Geral</button>
+            <button onclick="showScreen('controlePrazosScreen')">Controle de Prazos</button>
+            <button onclick="showScreen('assinaturaDigitalScreen')">Assinatura Digital</button>
+            <button onclick="showScreen('detalhesObraScreen')">Voltar</button>
+        </div>
+        
+        <script>
+            function atualizarProgresso() {
+                const andamento = document.getElementById("andamentoObra").value;
+                const barraProgresso = document.getElementById("barraProgresso");
+                const porcentagemProgresso = document.getElementById("porcentagemProgresso");
+        
+                let progresso = 0;
+        
+                if (andamento === "planejamento") progresso = 30;
+                else if (andamento === "execucao") progresso = 60;
+                else if (andamento === "finalizacao") progresso = 100;
+        
+                barraProgresso.style.width = `${progresso}%`;
+                porcentagemProgresso.innerText = `${progresso}%`;
+            }
+        </script>
+
+<div id="rdoScreen" class="screen">
+    <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px;">Registro de Atividades</h2>
+    <div class="atividade-container" style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+        <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Adicionar Atividade</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <select id="atividadeDescricao" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+                <option value="fase_de_solicitacao">Fase de Solicitação</option>
+                <option value="fase_de_producao">Fase de Produção</option>
+                <option value="fase_de_expedicao">Fase de Expedição</option>
+                <option value="fase_de_conclusao">Fase de Conclusão</option>
+            </select>
+            <select id="atividadeStatus" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+                <option value="pendente">Pendente</option>
+                <option value="em_progresso">Em Progresso</option>
+                <option value="concluida">Concluída</option>
+            </select>
+            <input type="date" id="atividadeData" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+        </div>
+        <textarea id="atividadeRelatorio" placeholder="Adicione um relatório detalhado..." style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; margin-bottom: 20px; height: 100px;"></textarea>
+        <div style="display: flex; justify-content: space-between;">
+            <button onclick="salvarAtividade()" style="padding: 12px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Salvar</button>
+            <button onclick="showScreen('painelObraScreen')" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Menu</button>
+        </div>
+    </div>
+    <h3 style="text-align: center; color: #333; font-size: 22px; margin-top: 30px;">Atividades Registradas</h3>
+    <div id="listaAtividades" style="margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+        <!-- Atividades salvas aparecerão aqui -->
+    </div>
+</div>
+
+<script>
+    function salvarAtividade() {
+        const descricao = document.getElementById("atividadeDescricao").value;
+        const status = document.getElementById("atividadeStatus").value;
+        const data = document.getElementById("atividadeData").value;
+        const relatorio = document.getElementById("atividadeRelatorio").value;
+
+        if (!descricao || !status || !data || !relatorio) {
+            alert("Por favor, preencha todos os campos.");
+            return;
+        }
+
+        const listaAtividades = document.getElementById("listaAtividades");
+        const atividadeDiv = document.createElement("div");
+        atividadeDiv.style.padding = "15px";
+        atividadeDiv.style.marginBottom = "15px";
+        atividadeDiv.style.border = "1px solid #ccc";
+        atividadeDiv.style.borderRadius = "8px";
+        atividadeDiv.style.backgroundColor = "#fff";
+        atividadeDiv.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+
+        atividadeDiv.innerHTML = `
+            <p><strong>Descrição:</strong> ${descricao}</p>
+            <p><strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}</p>
+            <p><strong>Data:</strong> ${new Date(data).toLocaleDateString()}</p>
+            <p><strong>Relatório:</strong> ${relatorio}</p>
+        `;
+
+        listaAtividades.appendChild(atividadeDiv);
+
+        // Limpa os campos após salvar
+        document.getElementById("atividadeDescricao").value = "";
+        document.getElementById("atividadeStatus").value = "pendente";
+        document.getElementById("atividadeData").value = "";
+        document.getElementById("atividadeRelatorio").value = "";
+    }
+</script>
+
+        <div id="equipesScreen" class="screen">
+            <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px; font-weight: bold;">Gerenciamento de Equipes e Materiais</h2>
+            <div class="equipes-container" style="background: #faf7f7; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                <!-- Formulário para adicionar colaboradores -->
+                <div class="adicionar-colaborador" style="margin-bottom: 20px;">
+                    <h3 style="color: #961c1c; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Adicionar Colaborador</h3>
+                    <input id="nomeColaborador" type="text" placeholder="Nome do Colaborador" style="padding: 12px; border: 1px solid #c0bfbf; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                    <select id="funcaoColaborador" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                        <option value="ajudante">Ajudante</option>
+                        <option value="lider">Líder</option>
+                    </select>
+                    <button onclick="adicionarColaborador()" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Adicionar</button>
+                </div>
+        
+                <!-- Seleção de veículos -->
+                <div class="adicionar-veiculo" style="margin-bottom: 20px;">
+                    <h3 style="color: #961c1c; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Selecionar Veículos</h3>
+                    <select id="veiculoSelecionado" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                        <option value="Caminhão 08 - Placa EEX1839">Caminhão 08 - Placa EEX1839</option>
+                        <option value="Caminhão 10 - Placa BTZ3E92">Caminhão 10 - Placa BTZ3E92</option>
+                        <option value="Caminhão 14 - Placa GDK6156">Caminhão 14 - Placa GDK6156</option>
+                        <option value="Caminhão 18 - Placa TMG2H59">Caminhão 18 - Placa TMG2H59</option>
+                        <option value="Carro 13 - Placa CUJ5C38">Carro 13 - Placa CUJ5C38</option>
+                        <option value="Carro 15 - Placa CUE7C87">Carro 15 - Placa CUE7C87</option>
+                        <option value="Pick-up 12 - Placa EOO9F68">Pick-up 12 - Placa EOO9F68</option>
+                        <option value="Pick-up 16 - Placa FXA1D61">Pick-up 16 - Placa FXA1D61</option>
+                    </select>
+                    <button onclick="adicionarVeiculo()" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Adicionar Veículo</button>
+                </div>
+        
+                <!-- Adicionar materiais -->
+                <div class="adicionar-material" style="margin-bottom: 20px;">
+                    <h3 style="color: #961c1c; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Adicionar Material</h3>
+                    <select id="materialSelecionado" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                        <option value="ANDAIMES">ANDAIMES</option>
+                        <option value="CAVALETE">CAVALETE</option>
+                        <option value="GUINCHO ARANHA">GUINCHO ARANHA</option>
+                        <option value="PERNAS">PERNAS</option>
+                        <option value="PLATAFORMAS">PLATAFORMAS</option>
+                        <option value="SAPATA">SAPATA</option>
+                        <option value="TRAVAS">TRAVAS</option>
+                    </select>
+                    <input id="quantidadeMaterial" type="number" placeholder="Quantidade" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; width: 100%; margin-bottom: 10px;">
+                    <button onclick="adicionarMaterial()" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Adicionar Material</button>
+                </div>
+        
+                <!-- Tabela de equipe, veículos e materiais -->
+                <div class="tabela-equipe">
+                    <h3 style="color: #961c1c; font-size: 22px; margin-bottom: 10px; font-weight: bold;">Equipe, Veículos e Materiais</h3>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background-color: white; border-radius: 12px; overflow: hidden;">
+                        <thead>
+                            <tr style="background-color: #961c1c; color: white; text-align: left;">
+                                <th style="padding: 15px; font-weight: bold;">Nome/Descrição</th>
+                                <th style="padding: 15px; font-weight: bold;">Função/Modelo/Quantidade</th>
+                                <th style="padding: 15px; font-weight: bold; text-align: center;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaEquipe" style="background-color: #fff5f5;">
+                            <!-- Colaboradores, veículos e materiais serão adicionados aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <button onclick="showScreen('painelObraScreen')" style="margin-top: 20px; padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">Menu</button>
+        </div>
+        
+        <script>
+            // Função para adicionar colaboradores à tabela
+            function adicionarColaborador() {
+                const nome = document.getElementById("nomeColaborador").value;
+                const funcao = document.getElementById("funcaoColaborador").value;
+        
+                if (nome && funcao) {
+                    const tabela = document.getElementById("listaEquipe");
+                    const linha = document.createElement("tr");
+        
+                    linha.innerHTML = `
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">${nome}</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333; text-transform: capitalize;">${funcao}</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; text-align: center;">
+                            <button onclick="excluirLinha(this)" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Excluir</button>
+                        </td>
+                    `;
+        
+                    tabela.appendChild(linha);
+        
+                    // Limpa os campos de entrada
+                    document.getElementById("nomeColaborador").value = "";
+                    document.getElementById("funcaoColaborador").value = "ajudante";
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            }
+        
+            // Função para adicionar veículos à tabela
+            function adicionarVeiculo() {
+                const veiculo = document.getElementById("veiculoSelecionado").value;
+        
+                if (veiculo) {
+                    const tabela = document.getElementById("listaEquipe");
+                    const linha = document.createElement("tr");
+        
+                    linha.innerHTML = `
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">🚗 ${veiculo}</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">Veículo</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; text-align: center;">
+                            <button onclick="excluirLinha(this)" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Excluir</button>
+                        </td>
+                    `;
+        
+                    tabela.appendChild(linha);
+                }
+            }
+        
+            // Função para adicionar materiais à tabela
+            function adicionarMaterial() {
+                const material = document.getElementById("materialSelecionado").value;
+                const quantidade = document.getElementById("quantidadeMaterial").value;
+        
+                if (material && quantidade) {
+                    const tabela = document.getElementById("listaEquipe");
+                    const linha = document.createElement("tr");
+        
+                    linha.innerHTML = `
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">📦 ${material}</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; color: #333;">Quantidade: ${quantidade}</td>
+                        <td style="padding: 15px; border-bottom: 1px solid #ddd; text-align: center;">
+                            <button onclick="excluirLinha(this)" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Excluir</button>
+                        </td>
+                    `;
+        
+                    tabela.appendChild(linha);
+        
+                    // Limpa os campos de entrada
+                    document.getElementById("materialSelecionado").value = "ANDAIMES";
+                    document.getElementById("quantidadeMaterial").value = "";
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            }
+        
+            // Função para excluir uma linha da tabela
+            function excluirLinha(botao) {
+                const linha = botao.parentElement.parentElement;
+                linha.remove();
+            }
+        </script>
+        </script>
+        <div id="visaoGeralScreen" class="screen">
+            <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px;">Visão Geral</h2>
+            <div class="visao-geral-container" style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                <!-- Cabeçalho Interativo com Informações da Obra -->
+                <div class="cabecalho-obra" style="margin-bottom: 20px;">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Informações da Obra</h3>
+                    <p><strong>Nome:</strong> <span id="obraNomeCabecalho" style="color: #555;">-</span></p>
+                    <p><strong>Endereço:</strong> <span id="obraEnderecoCabecalho" style="color: #555;">-</span></p>
+                    <p><strong>Data de Início:</strong> <span id="dataInicioCabecalho" style="color: #555;">-</span></p>
+                    <p><strong>Previsão de Término:</strong> <span id="dataTerminoCabecalho" style="color: #555;">-</span></p>
+                </div>
+        
+                <!-- Andamento da Obra -->
+                <div class="progresso-obra" style="margin-bottom: 20px;">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Andamento da Obra</h3>
+                    <select id="andamentoObra" onchange="atualizarAndamento()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+                        <option value="planejamento">Planejamento</option>
+                        <option value="execucao">Execução</option>
+                        <option value="finalizacao">Finalização</option>
+                    </select>
+                    <div id="statusContainer" style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                        <span id="statusAndamento" style="font-size: 18px; color: #555;">Planejamento</span>
+                        <img id="statusIcon" src="https://via.placeholder.com/40" alt="Ícone de Status" style="width: 40px; height: 40px;">
+                    </div>
+                </div>
+        
+                <!-- Ocorrências em Forma de Relatórios -->
+                <div class="ocorrencias" style="margin-bottom: 20px;">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Ocorrências</h3>
+                    <textarea id="ocorrenciaTexto" placeholder="Descreva a ocorrência..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;"></textarea>
+                    <button onclick="adicionarOcorrencia()" style="margin-top: 10px; padding: 10px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Adicionar Ocorrência</button>
+                    <ul id="listaOcorrencias" style="margin-top: 15px; list-style: none; padding: 0;">
+                        <!-- Ocorrências serão listadas aqui -->
+                    </ul>
+                </div>
+        
+                <!-- Documentos da Obra em Pequenas Pastas -->
+                <div class="documentos-obra">
+                    <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Documentos da Obra</h3>
+                    <div class="folder" onclick="abrirPasta('Documentos Técnicos')" style="display: inline-block; padding: 15px; background-color: #f4f4f4; border: 1px solid #ccc; border-radius: 8px; margin-right: 10px; cursor: pointer; text-align: center;">
+                        📁 Documentos Técnicos
+                    </div>
+                    <div class="folder" onclick="abrirPasta('Contratos')" style="display: inline-block; padding: 15px; background-color: #f4f4f4; border: 1px solid #ccc; border-radius: 8px; margin-right: 10px; cursor: pointer; text-align: center;">
+                        📁 Contratos
+                    </div>
+                    <div class="folder" onclick="abrirPasta('Relatórios')" style="display: inline-block; padding: 15px; background-color: #f4f4f4; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center;">
+                        📁 Relatórios
+                    </div>
+                </div>
+            </div>
+            <button onclick="showScreen('painelObraScreen')" style="margin-top: 20px; padding: 10px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Menu</button>
+        </div>
+        
+        <script>
+            function atualizarAndamento() {
+                const andamento = document.getElementById("andamentoObra").value;
+                const statusText = document.getElementById("statusAndamento");
+                const statusIcon = document.getElementById("statusIcon");
+        
+                statusText.innerText = andamento.charAt(0).toUpperCase() + andamento.slice(1);
+        
+                // Atualiza o ícone com base no andamento
+                if (andamento === "planejamento") {
+                    statusIcon.src = "https://via.placeholder.com/40/0000FF/FFFFFF?text=P"; // Ícone de Planejamento
+                } else if (andamento === "execucao") {
+                    statusIcon.src = "https://via.placeholder.com/40/008000/FFFFFF?text=E"; // Ícone de Execução
+                } else if (andamento === "finalizacao") {
+                    statusIcon.src = "https://via.placeholder.com/40/FF0000/FFFFFF?text=F"; // Ícone de Finalização
+                }
+            }
+        
+            function adicionarOcorrencia() {
+                const texto = document.getElementById("ocorrenciaTexto").value;
+                if (texto) {
+                    const lista = document.getElementById("listaOcorrencias");
+                    const li = document.createElement("li");
+                    li.style.padding = "10px";
+                    li.style.marginBottom = "10px";
+                    li.style.border = "1px solid #ccc";
+                    li.style.borderRadius = "8px";
+                    li.style.backgroundColor = "#f9f9f9";
+                    li.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+                    li.innerHTML = `<strong>•</strong> ${texto}`;
+                    lista.appendChild(li);
+                    document.getElementById("ocorrenciaTexto").value = "";
+                } else {
+                    alert("Por favor, descreva a ocorrência.");
+                }
+            }
+        
+            function abrirPasta(nomePasta) {
+                alert(`Abrindo a pasta: ${nomePasta}`);
+            }
+        </script>
+        </script>
+            <button onclick="showScreen('painelObraScreen')">Menu</button>
+        </div>
+        <div id="controlePrazosScreen" class="screen">
+            <h2>Controle de Prazos</h2>
+            <div class="controle-prazos-container">
+                <div class="controle-prazos-header">
+                    <h3>Adicionar Novo Prazo</h3>
+                    <div class="controle-prazos-buttons">
+                        <button onclick="salvarControlePrazos()">Salvar</button>
+                        <button onclick="showScreen('painelObraScreen')">Menu</button>
+                    </div>
+                </div>
+                <label for="itemSelecionado">Item:</label>
+                <select id="itemSelecionado">
+                    <option value="vidros">Vidros</option>
+                    <option value="componentes">Componentes</option>
+                    <option value="acessorios">Acessórios</option>
+                </select>
+                <label for="dataSelecionada">Data:</label>
+                <input type="date" id="dataSelecionada">
+                <label for="notificacoesPrazos">
+                    <input type="checkbox" id="notificacoesPrazos">
+                    Notificações
+                </label>
+                <div id="calendar"></div>
+                <div id="prazosOutput"></div> <!-- Contêiner para exibir os prazos salvos -->
+            </div>
+        </div>
+        
+        <div id="relatoriosScreen" class="screen">
+    <h2 style="text-align: center; color: #2c3e50; font-size: 32px; margin-bottom: 30px; font-weight: bold;">Relatórios e Avaliações</h2>
+    <div class="relatorios-container" style="background: #ecf0f1; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+        <h3 style="color: #34495e; font-size: 24px; margin-bottom: 20px; font-weight: bold;">Criar Novo Relatório</h3>
+        <select id="tipoRelatorio" style="padding: 15px; border: 1px solid #bdc3c7; border-radius: 10px; font-size: 16px; width: 100%; margin-bottom: 20px; background-color: #fff;">
+            <option value="">Selecione o tipo de relatório</option>
+            <option value="visita_tecnica">Relatório de Visita Técnica</option>
+            <option value="expedicao">Relatório de Expedição</option>
+            <option value="rio">Relatório de Informe de Obra (R.I.O)</option>
+            <option value="inspecao">Relatório de Inspeção de Obra</option>
+            <option value="instalacao">Relatório de Instalação</option>
+        </select>
+        <input id="tituloRelatorio" type="text" placeholder="Título do Relatório" style="padding: 15px; border: 1px solid #bdc3c7; border-radius: 10px; font-size: 16px; width: 100%; margin-bottom: 15px; background-color: #fff;">
+        <textarea id="conteudoRelatorio" placeholder="Escreva o conteúdo do relatório" style="width: 100%; padding: 15px; border: 1px solid #bdc3c7; border-radius: 10px; font-size: 16px; height: 150px; margin-bottom: 20px; background-color: #fff;"></textarea>
+        
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #34495e; font-size: 18px; margin-bottom: 10px;">Escolher Assinatura:</h4>
+            <div id="painelAssinaturas" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                <!-- Assinaturas disponíveis serão exibidas aqui -->
+            </div>
+        </div>
+
+        <div id="assinaturaSelecionadaPreview" style="text-align: center; margin-top: 20px; display: none;">
+            <h4 style="font-size: 18px; color: #34495e;">Assinatura Selecionada:</h4>
+            <img id="assinaturaPreview" src="" alt="Assinatura Selecionada" style="width: 200px; height: auto; border: 1px solid #bdc3c7; border-radius: 8px;">
+            <p id="nomeAssinaturaPreview" style="margin-top: 10px; font-size: 16px; color: #7f8c8d;"></p>
+        </div>
+
+        <button onclick="salvarRelatorio()" style="padding: 15px 25px; background-color: #27ae60; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.3s;">
+            Salvar Relatório
+        </button>
+    </div>
+
+    <h3 style="color: #34495e; font-size: 24px; margin-top: 40px; font-weight: bold;">Relatórios Salvos</h3>
+    <div id="listaRelatorios" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px;">
+        <!-- Relatórios salvos aparecerão aqui -->
+    </div>
+
+    <script>
+        function atualizarListaRelatorios() {
+            const listaRelatorios = document.getElementById("listaRelatorios");
+            listaRelatorios.innerHTML = "";
+
+            const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+            relatorios.forEach((relatorio, index) => {
+                const div = document.createElement("div");
+                div.style.border = "1px solid #ccc";
+                div.style.borderRadius = "8px";
+                div.style.padding = "15px";
+                div.style.backgroundColor = "#fff";
+                div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+                div.style.width = "300px";
+                div.style.position = "relative";
+
+                // Define a cor do status
+                let corStatus = "#ccc";
+                if (relatorio.status === "Preenchendo") corStatus = "#f0ad4e";
+                else if (relatorio.status === "Revisar") corStatus = "#5bc0de";
+                else if (relatorio.status === "Aprovado") corStatus = "#5cb85c";
+
+                div.innerHTML = `
+                    <h4 style="margin-bottom: 10px; color: #34495e;">${relatorio.titulo}</h4>
+                    <p style="margin-bottom: 5px; font-size: 14px; color: #555;"><strong>Tipo:</strong> ${relatorio.tipo}</p>
+                    <p style="margin-bottom: 10px; font-size: 14px; color: ${corStatus};"><strong>Status:</strong> ${relatorio.status}</p>
+                    <select onchange="atualizarStatus(${index}, this.value)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; margin-bottom: 10px;">
+                        <option value="Preenchendo" ${relatorio.status === "Preenchendo" ? "selected" : ""}>Preenchendo</option>
+                        <option value="Revisar" ${relatorio.status === "Revisar" ? "selected" : ""}>Revisar</option>
+                        <option value="Aprovado" ${relatorio.status === "Aprovado" ? "selected" : ""}>Aprovado</option>
+                    </select>
+                    <button onclick="visualizarRelatorio(${index})" style="width: 100%; padding: 10px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Visualizar</button>
+                `;
+
+                listaRelatorios.appendChild(div);
+            });
+        }
+
+        function atualizarStatus(index, novoStatus) {
+            const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+            if (index >= 0 && index < relatorios.length) {
+                relatorios[index].status = novoStatus;
+                localStorage.setItem('relatorios', JSON.stringify(relatorios));
+                atualizarListaRelatorios();
+                alert("Status atualizado com sucesso!");
+            } else {
+                alert("Erro ao atualizar o status.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', atualizarListaRelatorios);
+    </script>
+</div>
+
+<script>
+    function carregarPainelAssinaturas() {
+        const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+        const painelAssinaturas = document.getElementById('painelAssinaturas');
+
+        painelAssinaturas.innerHTML = '';
+        assinaturas.forEach((assinatura, index) => {
+            const div = document.createElement('div');
+            div.style.border = "1px solid #ccc";
+            div.style.borderRadius = "8px";
+            div.style.padding = "10px";
+            div.style.textAlign = "center";
+            div.style.backgroundColor = "#fff";
+            div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+            div.style.width = "150px";
+            div.style.cursor = "pointer";
+
+            div.innerHTML = `
+                <img src="${assinatura.imagem}" alt="Assinatura de ${assinatura.nome}" style="width: 100%; height: auto; border-radius: 8px;">
+                <p style="margin: 10px 0; font-size: 14px; color: #333;">${assinatura.nome}</p>
+                <button onclick="selecionarAssinatura(${index})" style="padding: 8px 12px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Selecionar</button>
+            `;
+            painelAssinaturas.appendChild(div);
+        });
+    }
+
+    function selecionarAssinatura(index) {
+        const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+        assinaturaSelecionada = assinaturas[index];
+
+        if (assinaturaSelecionada) {
+            const previewDiv = document.getElementById('assinaturaSelecionadaPreview');
+            const previewImg = document.getElementById('assinaturaPreview');
+            const previewNome = document.getElementById('nomeAssinaturaPreview');
+
+            previewImg.src = assinaturaSelecionada.imagem;
+            previewNome.innerText = assinaturaSelecionada.nome;
+            previewDiv.style.display = 'block';
+        }
+    }
+
+    function salvarRelatorio() {
+        const tipoRelatorio = document.getElementById("tipoRelatorio").value;
+        const titulo = document.getElementById("tituloRelatorio").value;
+        const conteudo = document.getElementById("conteudoRelatorio").value;
+
+        if (!tipoRelatorio || !titulo || !conteudo || !assinaturaSelecionada) {
+            alert("Por favor, preencha todos os campos e selecione uma assinatura.");
+            return;
+        }
+
+        const relatorio = {
+            tipo: tipoRelatorio,
+            titulo,
+            conteudo,
+            assinatura: assinaturaSelecionada,
+            status: avaliacaoAtual || "Não avaliado" // Adiciona o status da avaliação
+        };
+
+        const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+        relatorios.push(relatorio);
+        localStorage.setItem('relatorios', JSON.stringify(relatorios));
+
+        alert('Relatório salvo com sucesso!');
+        atualizarListaRelatorios();
+    }
+
+    function atualizarListaRelatorios() {
+        const listaRelatorios = document.getElementById("listaRelatorios");
+        listaRelatorios.innerHTML = "";
+
+        const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+        relatorios.forEach((relatorio, index) => {
+            const div = document.createElement("div");
+            div.style.border = "1px solid #ccc";
+            div.style.borderRadius = "8px";
+            div.style.padding = "15px";
+            div.style.backgroundColor = "#fff";
+            div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+            div.style.cursor = "pointer";
+            div.style.position = "relative";
+
+            // Define a cor do status
+            let corStatus = "#ccc";
+            if (relatorio.status === "Preenchendo") corStatus = "#f0ad4e";
+            else if (relatorio.status === "Revisar") corStatus = "#5bc0de";
+            else if (relatorio.status === "Aprovado") corStatus = "#5cb85c";
+
+            div.innerHTML = `
+                <h4>${relatorio.titulo}</h4>
+                <p><strong>Tipo:</strong> ${relatorio.tipo}</p>
+                <p><strong>Status:</strong> <span style="color: ${corStatus}; font-weight: bold;">${relatorio.status}</span></p>
+                <p><strong>Comentário:</strong> ${relatorio.comentario || 'Nenhum comentário'}</p>
+                <button onclick="visualizarRelatorio(${index})" style="margin-top: 10px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Visualizar</button>
+                <button onclick="excluirRelatorio(${index})" style="margin-top: 10px; margin-left: 10px; padding: 10px 20px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Excluir</button>
+            `;
+
+            listaRelatorios.appendChild(div);
+        });
+    }
+
+    function excluirRelatorio(index) {
+        const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+        if (index >= 0 && index < relatorios.length) {
+            relatorios.splice(index, 1); // Remove o relatório do array
+            localStorage.setItem('relatorios', JSON.stringify(relatorios)); // Atualiza o localStorage
+            alert("Relatório excluído com sucesso!");
+            atualizarListaRelatorios(); // Atualiza a lista exibida
+        } else {
+            alert("Erro ao excluir o relatório.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarPainelAssinaturas);
+</script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+                events: [],
+                eventClick: function(info) {
+                    alert('Item: ' + info.event.title + '\nData: ' + info.event.start.toLocaleDateString());
+                }
+            });
+            calendar.render();
+
+            const itemColors = {
+                vidros: '#3498db',
+                componentes: '#2ecc71',
+                acessorios: '#e74c3c'
+            };
+
+            window.salvarControlePrazos = function() {
+                const notificacoes = document.getElementById("notificacoesPrazos").checked;
+                const itemSelecionado = document.getElementById("itemSelecionado").value;
+                const dataSelecionada = document.getElementById("dataSelecionada").value;
+
+                if (itemSelecionado && dataSelecionada) {
+                    calendar.addEvent({
+                        title: itemSelecionado,
+                        start: dataSelecionada,
+                        allDay: true,
+                        backgroundColor: itemColors[itemSelecionado],
+                        borderColor: itemColors[itemSelecionado]
+                    });
+                    alert("Controle de prazos salvo com sucesso!");
+
+                    const prazosOutput = document.getElementById("prazosOutput");
+                    const div = document.createElement("div");
+                    div.innerHTML = ` 
+                        <p><strong>Item:</strong> ${itemSelecionado}</p>
+                        <p><strong>Data:</strong> ${dataSelecionada}</p>
+                        <p><strong>Notificações:</strong> ${notificacoes ? 'Sim' : 'Não'}</p>
+                    `;
+                    prazosOutput.appendChild(div);
+
+                    document.getElementById("itemSelecionado").value = '';
+                    document.getElementById("dataSelecionada").value = '';
+                    document.getElementById("notificacoesPrazos").checked = false;
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            };
+        });
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+                screen.style.opacity = 0;
+            });
+            const activeScreen = document.getElementById(screenId);
+            activeScreen.classList.add('active');
+            setTimeout(() => {
+                activeScreen.style.opacity = 1;
+            }, 10);
+        }
+
+        function showProfileInfo(profile) {
+            const profileInfo = document.getElementById('profileInfo');
+            let info = '';
+
+            switch (profile) {
+                case 'admin':
+                    info = '<p>Admin: Acesso total ao sistema.</p>';
+                    break;
+                case 'user':
+                    info = '<p>User: Acesso limitado a algumas funcionalidades.</p>';
+                    break;
+                case 'guest':
+                    info = '<p>Guest: Acesso restrito a visualizações.</p>';
+                    break;
+            }
+
+            profileInfo.innerHTML = info;
+        }
+
+        function salvarObra() {
+            const nome = document.getElementById("obraNome").value;
+            const endereco = document.getElementById("obraEndereco").value;
+            const dataInicio = document.getElementById("dataInicio").value;
+            const previsaoTermino = document.getElementById("previsaoTermino").value;
+            const descricao = document.getElementById("obraDescricao").value;
+
+            if (nome && endereco && dataInicio && previsaoTermino && descricao) {
+                const obrasOutput = document.getElementById("obrasOutput");
+                const div = document.createElement("div");
+                div.innerHTML = `
+                    <p><strong>Nome:</strong> ${nome}</p>
+                    <p><strong>Endereço:</strong> ${endereco}</p>
+                    <p><strong>Data de Início:</strong> ${dataInicio}</p>
+                    <p><strong>Previsão de Término:</strong> ${previsaoTermino}</p>
+                    <p><strong>Descrição:</strong> ${descricao}</p>
+                    <button onclick="abrirObra('${nome}')">Abrir</button>
+                `;
+                obrasOutput.appendChild(div);
+            } else {
+                alert("Por favor, preencha todos os campos.");
+            }
+        }
+
+        function abrirObra(nome) {
+            document.getElementById("detalhesObra").innerHTML = `<h3>${nome}</h3>`;
+            showScreen("detalhesObraScreen");
+        }
+
+        function atualizarGrafico() {
+            const textoRelatorio = document.getElementById("relatorioTexto").value;
+            const tipoGrafico = document.getElementById("tipoGrafico").value;
+            const dados = textoRelatorio.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+
+            if (dados.length === 0) {
+                alert("Insira valores numéricos separados por vírgula para atualizar o gráfico.");
+                return;
+            }
+
+            const ctx = document.getElementById('grafico').getContext('2d');
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+            window.myChart = new Chart(ctx, {
+                type: tipoGrafico,
+                data: {
+                    labels: dados.map((_, i) => `Item ${i + 1}`),
+                    datasets: [{
+                        label: 'Dados do Relatório',
+                        data: dados,
+                        backgroundColor: tipoGrafico === 'bar' ? 'rgba(211, 47, 47, 0.6)' : 'rgba(33, 150, 243, 0.6)',
+                        borderColor: tipoGrafico === 'bar' ? 'rgba(211, 47, 47, 1)' : 'rgba(33, 150, 243, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 1000
+                    }
+                }
+            });
+        }
+
+function importarPlanilha() {
+    const fileUpload = document.getElementById('fileUpload');
+    const tabela = document.getElementById('tabelaDados');
+    const visualizacao = document.getElementById('visualizacaoPlanilha');
+
+    if (fileUpload.files.length === 0) {
+        alert('Por favor, selecione um arquivo.');
+        return;
+    }
+
+    const file = fileUpload.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const primeiraPlanilha = workbook.Sheets[workbook.SheetNames[0]];
+            const conteudo = XLSX.utils.sheet_to_json(primeiraPlanilha, { header: 1 });
+
+            if (conteudo.length === 0) {
+                alert('A planilha está vazia ou não contém dados legíveis.');
+                return;
+            }
+
+            tabela.innerHTML = ''; // Limpa a tabela antes de adicionar novos dados
+
+            conteudo.forEach((linha, index) => {
+                const tr = document.createElement('tr');
+                linha.forEach((celula) => {
+                    const td = document.createElement(index === 0 ? 'th' : 'td');
+                    td.style.padding = '10px';
+                    td.style.border = '1px solid #ddd';
+                    td.style.color = '#333';
+                    td.style.backgroundColor = index === 0 ? '#f4f4f4' : '#fff';
+                    td.innerText = celula || '';
+                    tr.appendChild(td);
+                });
+                tabela.appendChild(tr);
+            });
+
+            visualizacao.style.display = 'block'; // Exibe a tabela
+        } catch (error) {
+            console.error('Erro ao processar a planilha:', error);
+            alert('Ocorreu um erro ao processar a planilha. Verifique se o arquivo está no formato correto.');
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+            reader.readAsArrayBuffer(file);
+        
+
+
+function visualizarRelatorio(index) {
+    const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+    const relatorio = relatorios[index];
+
+    if (!relatorio) {
+        alert("Relatório não encontrado.");
+        return;
+    }
+
+    const relatorioVisualizacao = document.getElementById("relatorioVisualizacao");
+
+    relatorioVisualizacao.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h3 style="color: #333; font-size: 22px; font-weight: bold;">${relatorio.titulo}</h3>
+            <p style="font-size: 16px; color: #555; margin-bottom: 20px;"><strong>Tipo:</strong> ${relatorio.tipo}</p>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <p style="font-size: 16px; color: #555; line-height: 1.6;">${relatorio.conteudo}</p>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <h4 style="font-size: 18px; color: #333;">Assinatura do Responsável:</h4>
+            <img src="${relatorio.assinatura.imagem}" alt="Assinatura do Autor" style="width: 200px; height: auto; border: 1px solid #ccc; border-radius: 8px;">
+            <p style="margin-top: 10px; font-size: 16px; color: #555;">${relatorio.assinatura.nome}</p>
+        </div>
+    `;
+
+    carregarStatusRelatorio(relatorio.titulo); // Carrega o status salvoalvo
+    showScreen("relatorioVisualizacaoScreen");
+}
+
+function aprovarRelatorio() {
+    alert("Relatório aprovado com sucesso!");
+    showScreen("relatoriosScreen");
+}
+
+function reprovarRelatorio() {
+    alert("Relatório reprovado. Você pode editá-lo.");
+    showScreen("relatorioEdicaoScreen");
+}
+
+ 
+function carregarStatusRelatorio(titulo) {
+    const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+    const relatorio = relatorios.find(r => r.titulo === titulo);
+
+    if (relatorio && relatorio.status) {
+        avaliarRelatorio(relatorio.status); // Atualiza a aparência dos botões com base no status salvo
+    }
+}
+
+function salvarAvaliacaoComCor() {
+    const comentario = document.getElementById('comentarioAvaliacao').value;
+
+    if (!avaliacaoAtual) {
+        alert('Por favor, selecione um status para o relatório.');
+        return;
+    }
+
+    if (!comentario.trim()) {
+        alert('Por favor, deixe um comentário sobre o relatório.');
+        return;
+    }
+
+    // Define a cor do painel com base no tipo de avaliação
+    const painel = document.getElementById('avaliacaoRelatorio');
+    let cor = '';
+    if (avaliacaoAtual === 'Preenchendo') {
+        cor = '#f0ad4e';
+    } else if (avaliacaoAtual === 'Revisar') {
+        cor = '#5bc0de';
+    } else if (avaliacaoAtual === 'Aprovado') {
+        cor = '#5cb85c';
+    }
+
+    painel.style.border = `5px solid ${cor}`;
+
+    // Salva a avaliação no localStorage
+    const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+    const index = relatorios.findIndex(r => r.titulo === document.querySelector('#relatorioVisualizacao h3').innerText);
+
+    if (index !== -1) {
+        relatorios[index].status = avaliacaoAtual; // Atualiza o status do relatório
+        relatorios[index].comentario = comentario; // Salva o comentário
+        localStorage.setItem('relatorios', JSON.stringify(relatorios));
+        alert('Avaliação salva com sucesso!');
+        document.getElementById('comentarioAvaliacao').value = ''; // Limpa o campo de comentário
+    } else {
+        alert('Erro ao salvar a avaliação. Relatório não encontrado.');
+    }
+}
+
+function carregarAvaliacoes() {
+    const avaliacoes = JSON.parse(localStorage.getItem('avaliacoes')) || [];
+    const relatorioVisualizacao = document.getElementById('relatorioVisualizacao');
+
+    if (avaliacoes.length > 0) {
+        const divAvaliacoes = document.createElement('div');
+        divAvaliacoes.style.marginTop = '30px';
+        divAvaliacoes.innerHTML = `
+            <h3 style="text-align: center; color: #333; font-size: 22px; margin-bottom: 20px;">Avaliações Recentes</h3>
+        `;
+
+        avaliacoes.forEach(avaliacao => {
+            const div = document.createElement('div');
+            div.style.padding = '15px';
+            div.style.marginBottom = '15px';
+            div.style.border = '1px solid #ccc';
+            div.style.borderRadius = '8px';
+            div.style.backgroundColor = '#fff';
+            div.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+
+            div.innerHTML = `
+                <p><strong>Status:</strong> ${avaliacao.status}</p>
+                <p><strong>Comentário:</strong> ${avaliacao.comentario}</p>
+                <p style="font-size: 12px; color: #555;"><strong>Data:</strong> ${avaliacao.data}</p>
+            `;
+
+            divAvaliacoes.appendChild(div);
+        });
+
+        relatorioVisualizacao.appendChild(divAvaliacoes);
+    }
+}
+    </script>
+<div id="assinaturaDigitalScreen" class="screen">
+    <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px;">Assinatura Digital</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
+        <!-- Área de Assinatura -->
+        <div style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+            <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Assine Aqui</h3>
+            <canvas id="canvasAssinatura" style="border: 1px solid #ccc; border-radius: 8px; width: 100%; height: 300px; cursor: crosshair;"></canvas>
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <label>
+                    Cor:
+                    <input type="color" id="corLinha" value="#000000" style="margin-left: 5px;">
+                </label>
+                <label>
+                    Espessura:
+                    <input type="number" id="espessuraLinha" value="2" min="1" max="10" style="width: 60px; margin-left: 5px;">
+                </label>
+                <button onclick="desfazerUltimoTraço()" style="padding: 8px 12px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Desfazer</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="nomeAssinante" style="font-size: 16px; color: #333;">Nome do Assinante:</label>
+                <input type="text" id="nomeAssinante" placeholder="Digite o nome do assinante" style="width: 100%; margin-top: 5px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <button onclick="limparAssinatura()" style="padding: 12px 20px; background-color: #f44336; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Limpar</button>
+                <button onclick="salvarAssinatura()" style="padding: 12px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Salvar</button>
+            </div>
+        </div>
+
+        <!-- Painel de Assinaturas -->
+        <div style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+            <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">Painel de Assinaturas</h3>
+            <div id="listaAssinaturas" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-height: 400px; overflow-y: auto;">
+                <!-- Assinaturas salvas aparecerão aqui -->
+            </div>
+        </div>
+    </div>
+    <button onclick="showScreen('painelObraScreen')" style="margin-top: 20px; padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Menu</button>
+</div>
+<script>
+let canvas, ctx, desenhando = false, ultimaPosicao = { x: 0, y: 0 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    canvas = document.getElementById('canvasAssinatura');
+    ctx = canvas.getContext('2d');
+
+    canvas.addEventListener('mousedown', iniciarDesenho);
+    canvas.addEventListener('mousemove', desenhar);
+    canvas.addEventListener('mouseup', pararDesenho);
+    canvas.addEventListener('mouseout', pararDesenho);
+
+    canvas.addEventListener('touchstart', iniciarDesenhoTouch, { passive: true });
+    canvas.addEventListener('touchmove', desenharTouch, { passive: true });
+    canvas.addEventListener('touchend', pararDesenho);
+
+    // Transformar o cursor em uma caneta ao desenhar
+    canvas.style.cursor = 'crosshair';
+});
+
+function iniciarDesenho(e) {
+    desenhando = true;
+    canvas.style.cursor = 'url(https://img.icons8.com/ios-filled/50/000000/pen.png), auto'; // Ícone de caneta
+    const { offsetX, offsetY } = e;
+    ultimaPosicao = { x: offsetX, y: offsetY };
+}
+
+function desenhar(e) {
+    if (!desenhando) return;
+    const { offsetX, offsetY } = e;
+    ctx.beginPath();
+    ctx.moveTo(ultimaPosicao.x, ultimaPosicao.y);
+    ctx.lineTo(offsetX, offsetY);
+    ctx.strokeStyle = document.getElementById('corLinha').value;
+    ctx.lineWidth = document.getElementById('espessuraLinha').value;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ultimaPosicao = { x: offsetX, y: offsetY };
+}
+
+function iniciarDesenhoTouch(e) {
+    desenhando = true;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    ultimaPosicao = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+}
+
+function desenharTouch(e) {
+    if (!desenhando) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(ultimaPosicao.x, ultimaPosicao.y);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = document.getElementById('corLinha').value;
+    ctx.lineWidth = document.getElementById('espessuraLinha').value;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ultimaPosicao = { x: x, y: y };
+}
+
+function pararDesenho() {
+    desenhando = false;
+    canvas.style.cursor = 'crosshair'; // Retorna ao cursor padrão
+    ctx.closePath();
+}
+
+function limparAssinatura() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function desfazerUltimoTraço() {
+    alert('Função de desfazer ainda não implementada.');
+}
+
+function salvarAssinatura() {
+    const assinatura = canvas.toDataURL('image/png');
+    const nomeAssinante = document.getElementById('nomeAssinante').value.trim();
+
+    if (!nomeAssinante) {
+        alert('Por favor, insira o nome do assinante antes de salvar.');
+        return;
+    }
+
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    assinaturas.push({ nome: nomeAssinante, imagem: assinatura });
+    localStorage.setItem('assinaturas', JSON.stringify(assinaturas));
+
+    alert('Assinatura salva com sucesso!');
+    limparAssinatura();
+    exibirAssinaturas();
+}
+
+function exibirAssinaturas() {
+    const listaAssinaturas = document.getElementById('listaAssinaturas');
+    listaAssinaturas.innerHTML = '';
+
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    assinaturas.forEach((assinatura, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.borderRadius = '8px';
+        div.style.padding = '10px';
+        div.style.textAlign = 'center';
+        div.style.backgroundColor = '#fff';
+        div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+        div.style.width = '150px';
+        div.style.position = 'relative';
+
+        div.innerHTML = `
+            <img src="${assinatura.imagem}" alt="Assinatura de ${assinatura.nome}" style="width: 100%; height: auto; border-radius: 8px;">
+            <p style="margin: 10px 0; font-size: 14px; color: #333;">${assinatura.nome}</p>
+            <button onclick="usarAssinatura(${index})" style="padding: 8px 12px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Usar</button>
+            <button onclick="excluirAssinatura(${index})" style="position: absolute; top: 5px; right: 5px; background: none; border: none; cursor: pointer; padding: 0;">
+                <img src="https://img.icons8.com/ios-glyphs/20/ff0000/delete-forever.png" alt="Excluir" style="width: 20px; height: 20px;">
+            </button>
+        `;
+        listaAssinaturas.appendChild(div);
+    });
+}
+
+function excluirAssinatura(index) {
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    assinaturas.splice(index, 1);
+    localStorage.setItem('assinaturas', JSON.stringify(assinaturas));
+    exibirAssinaturas();
+}
+
+function usarAssinatura(index) {
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    const assinaturaSelecionada = assinaturas[index];
+
+    if (assinaturaSelecionada) {
+        alert(`Assinatura de ${assinaturaSelecionada.nome} selecionada para validação.`);
+    }
+}
+function validarComAssinatura() {
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    if (assinaturas.length === 0) {
+        alert('Nenhuma assinatura disponível para validação.');
+        return;
+    }
+
+    const assinaturaSelecionada = assinaturas[0]; // Exemplo: usar a primeira assinatura
+    alert(`Validação realizada com a assinatura de ${assinaturaSelecionada.nome}.`);
+}
+
+function carregarPainelAssinaturas() {
+    const assinaturas = JSON.parse(localStorage.getItem('assinaturas')) || [];
+    const painelAssinaturas = document.getElementById('painelAssinaturas');
+
+    painelAssinaturas.innerHTML = '';
+    assinaturas.forEach((assinatura, index) => {
+        const div = document.createElement('div');
+        div.style.border = "1px solid #ccc";
+        div.style.borderRadius = "8px";
+        div.style.padding = "10px";
+        div.style.textAlign = "center";
+        div.style.backgroundColor = "#fff";
+        div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+        div.style.width = "150px";
+        div.style.cursor = "pointer";
+
+        div.innerHTML = `
+            <img src="${assinatura.imagem}" alt="Assinatura de ${assinatura.nome}" style="width: 100%; height: auto; border-radius: 8px;">
+            <p style="margin: 10px 0; font-size: 14px; color: #333;">${assinatura.nome}</p>
+            <button onclick="selecionarAssinatura(${index})" style="padding: 8px 12px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Selecionar</button>
+        `;
+        painelAssinaturas.appendChild(div);
+    });
+}
+
+
+</script>
+<div id="relatorioVisualizacaoScreen" class="screen">
+    <h2 style="text-align: center; color: #2c3e50; font-size: 32px; margin-bottom: 30px; font-weight: bold;">Visualização do Relatório</h2>
+    <div id="relatorioVisualizacao" style="background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+        <!-- O conteúdo do relatório será exibido aqui -->
+    </div>
+    <div id="avaliacaoRelatorio" style="margin-top: 40px; background: #f8f9fa; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);">
+        <h3 style="text-align: center; color: #34495e; font-size: 28px; margin-bottom: 20px; font-weight: bold;">Avaliação do Relatório</h3>
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <button onclick="confirmarAvaliacao('Preenchendo')" id="btnPreenchendo" style="padding: 15px 25px; background-color: #f39c12; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: transform 0.3s;">
+                Preenchendo
+            </button>
+            <button onclick="confirmarAvaliacao('Revisar')" id="btnRevisar" style="padding: 15px 25px; background-color: #3498db; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: transform 0.3s;">
+                Revisar
+            </button>
+            <button onclick="confirmarAvaliacao('Aprovado')" id="btnAprovado" style="padding: 15px 25px; background-color: #2ecc71; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: transform 0.3s;">
+                Aprovado
+            </button>
+        </div>
+        <textarea id="comentarioAvaliacao" placeholder="Deixe seu comentário sobre o relatório..." style="width: 100%; padding: 15px; border: 1px solid #bdc3c7; border-radius: 10px; font-size: 16px; height: 120px; margin-bottom: 20px; background-color: #ffffff;"></textarea>
+        <button onclick="salvarAvaliacaoComCor()" style="padding: 15px 25px; background-color: #27ae60; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background-color 0.3s;">
+            Salvar Avaliação
+        </button>
+    </div>
+    <button onclick="showScreen('relatoriosScreen')" style="margin-top: 30px; padding: 15px 25px; background-color: #e74c3c; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; transition: transform 0.3s;">
+        Voltar
+    </button>
+</div>
+
+<script>
+    let avaliacaoAtual = '';
+
+    function confirmarAvaliacao(status) {
+        const confirmacao = confirm(`Você selecionou "${status}". Deseja confirmar esta ação?`);
+        if (confirmacao) {
+            avaliarRelatorio(status);
+        }
+    }
+
+    function avaliarRelatorio(status) {
+        avaliacaoAtual = status;
+
+        // Atualiza a aparência dos botões
+        document.getElementById('btnPreenchendo').style.backgroundColor = status === 'Preenchendo' ? '#f0ad4e' : '#ddd';
+        document.getElementById('btnRevisar').style.backgroundColor = status === 'Revisar' ? '#5bc0de' : '#ddd';
+        document.getElementById('btnAprovado').style.backgroundColor = status === 'Aprovado' ? '#5cb85c' : '#ddd';
+
+        alert(`Status "${status}" selecionado com sucesso!`);
+    }
+
+    function salvarAvaliacaoComCor() {
+        const comentario = document.getElementById('comentarioAvaliacao').value;
+
+        if (!avaliacaoAtual) {
+            alert('Por favor, selecione um status para o relatório.');
+            return;
+        }
+
+        if (!comentario.trim()) {
+            alert('Por favor, deixe um comentário sobre o relatório.');
+            return;
+        }
+
+        // Define a cor do painel com base no tipo de avaliação
+        const painel = document.getElementById('avaliacaoRelatorio');
+        let cor = '';
+        if (avaliacaoAtual === 'Preenchendo') {
+            cor = '#f0ad4e';
+        } else if (avaliacaoAtual === 'Revisar') {
+            cor = '#5bc0de';
+        } else if (avaliacaoAtual === 'Aprovado') {
+            cor = '#5cb85c';
+        }
+
+        painel.style.border = `5px solid ${cor}`;
+
+        // Salva a avaliação no localStorage
+        const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+        const tituloRelatorio = document.querySelector('#relatorioVisualizacao h3').innerText;
+        const index = relatorios.findIndex(r => r.titulo === tituloRelatorio);
+
+        if (index !== -1) {
+            relatorios[index].status = avaliacaoAtual; // Atualiza o status do relatório
+            relatorios[index].comentario = comentario; // Salva o comentário
+            localStorage.setItem('relatorios', JSON.stringify(relatorios));
+            alert('Avaliação salva com sucesso!');
+            document.getElementById('comentarioAvaliacao').value = ''; // Limpa o campo de comentário
+        } else {
+            alert('Erro ao salvar a avaliação. Relatório não encontrado.');
+        }
+    }
+
+    function carregarStatusRelatorio(titulo) {
+        const relatorios = JSON.parse(localStorage.getItem('relatorios')) || [];
+        const relatorio = relatorios.find(r => r.titulo === titulo);
+
+        if (relatorio && relatorio.status) {
+            avaliarRelatorio(relatorio.status); // Atualiza a aparência dos botões com base no status salvo
+            aplicarCorPainel(relatorio.status); // Aplica a cor do painel com base no status salvo
+        }
+    }
+
+    function aplicarCorPainel(status) {
+        const painel = document.getElementById('avaliacaoRelatorio');
+        let cor = '';
+        if (status === 'Preenchendo') {
+            cor = '#f0ad4e';
+        } else if (status === 'Revisar') {
+            cor = '#5bc0de';
+        } else if (status === 'Aprovado') {
+            cor = '#5cb85c';
+        }
+        painel.style.border = `5px solid ${cor}`;
+    }
+
+    // Aplica a cor do painel ao carregar a tela
+    document.addEventListener('DOMContentLoaded', () => {
+        const tituloRelatorio = document.querySelector('#relatorioVisualizacao h3')?.innerText;
+        if (tituloRelatorio) {
+            carregarStatusRelatorio(tituloRelatorio);
+        }
+    });
+</script>
+
+<div id="paineisRotinaScreen" class="screen">
+    <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px; font-weight: bold;">Paineis de Rotina</h2>
+    <div class="submenu-container" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;">
+        <button onclick="showScreen('programacaoSemanalScreen')" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Programação Semanal de Instalação</button>
+        <button onclick="showScreen('apontamentoProducaoScreen')" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Apontamento de Produção</button>
+        <button onclick="showScreen('statusProducaoScreen')" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Status de Produção</button>
+        <button onclick="showScreen('chegadaMateriaPrimaScreen')" style="padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Chegada de Matéria-Prima para Semana</button>
+    </div>
+    <button onclick="showScreen('menuScreen')" style="margin-top: 20px; padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Voltar ao Menu</button>
+</div>
+
+<div id="programacaoSemanalScreen" class="screen">
+    <h2 style="text-align:center; color:#961c1c; font-size:28px; margin-bottom:20px;">Programação Semanal de Instalação</h2>
+    <div style="background:#fff; padding:24px; border-radius:16px; box-shadow:0 4px 16px rgba(150,28,28,0.10); margin-bottom:32px;">
+        <h3 style="color:#34495e; font-size:22px; margin-bottom:18px; font-weight:bold; text-align:center;">
+            Programação de Veículos por Dia da Semana
+        </h3>
+        <div style="overflow-x:auto;">
+            <table id="tabelaProgramacaoVeiculos">
+                <thead>
+                    <tr>
+                        <th>Veículo</th>
+                        <th>Segunda</th>
+                        <th>Terça</th>
+                        <th>Quarta</th>
+                        <th>Quinta</th>
+                        <th>Sexta</th>
+                        <th>Sábado</th>
+                    </tr>
+                    <tr style="background-color: #f4f4f4; color: #333;">
+                        <th>Data</th>
+                        <td><input type="date" id="progSegundaData" onchange="atualizarDatasProgramacao('progSegundaData')"></td>
+                        <td><input type="date" id="progTercaData" onchange="atualizarDatasProgramacao('progTercaData')"></td>
+                        <td><input type="date" id="progQuartaData" onchange="atualizarDatasProgramacao('progQuartaData')"></td>
+                        <td><input type="date" id="progQuintaData" onchange="atualizarDatasProgramacao('progQuintaData')"></td>
+                        <td><input type="date" id="progSextaData" onchange="atualizarDatasProgramacao('progSextaData')"></td>
+                        <td><input type="date" id="progSabadoData" onchange="atualizarDatasProgramacao('progSabadoData')"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Linha Veículo 16 -->
+                    <tr>
+                        <td>Veículo 16</td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content">
+                                <div class="cell-label">Cliente:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label lider">Líder de Instalação:</div>
+                                <div class="cell-edit" contenteditable="true"></div>
+                                <div class="cell-label ajudantes">Ajudantes:</div>
+                                <div class="cell-edit ajudantes" contenteditable="true"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Repita para os outros veículos -->
+                    <tr>
+                        <td>Veículo 14</td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Veículo 12</td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Veículo 10</td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Veículo 8</td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Veículo 18</td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                        <td><div class="cell-content"><div class="cell-label">Cliente:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label lider">Líder de Instalação:</div><div class="cell-edit" contenteditable="true"></div><div class="cell-label ajudantes">Ajudantes:</div><div class="cell-edit ajudantes" contenteditable="true"></div></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button onclick="showScreen('paineisRotinaScreen')" style="margin-top:20px; padding:12px 20px; background-color:#961c1c; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">Voltar</button>
+</div>
+<script>
+ function salvarProgramacaoSemanal() {
+    const datas = [
+        document.getElementById('progSegundaData').value,
+        document.getElementById('progTercaData').value,
+        document.getElementById('progQuartaData').value,
+        document.getElementById('progQuintaData').value,
+        document.getElementById('progSextaData').value,
+        document.getElementById('progSabadoData').value
+    ];
+    const veiculos = [
+        "Veículo 16", "Veículo 14", "Veículo 12", "Veículo 10", "Veículo 8", "Veículo 18"
+    ];
+    let programacao = JSON.parse(localStorage.getItem('programacaoSemanal')) || {};
+
+    veiculos.forEach((veiculo, vIdx) => {
+        if (!programacao[veiculo]) programacao[veiculo] = {};
+        for (let dIdx = 0; dIdx < datas.length; dIdx++) {
+            const dataRef = datas[dIdx];
+            if (!dataRef) continue;
+            const linha = document.querySelectorAll('#tabelaProgramacaoVeiculos tbody tr')[vIdx];
+            const celula = linha.cells[dIdx + 1];
+            if (celula) {
+                const cliente = celula.querySelector('.cell-edit:nth-of-type(1)')?.innerText || '';
+                const lider = celula.querySelector('.cell-edit:nth-of-type(2)')?.innerText || '';
+                const ajudantes = celula.querySelector('.cell-edit.ajudantes')?.innerText || '';
+                if (cliente || lider || ajudantes) {
+                    programacao[veiculo][dataRef] = { cliente, lider, ajudantes };
+                } else {
+                    delete programacao[veiculo][dataRef];
+                }
+            }
+        }
+    });
+
+    localStorage.setItem('programacaoSemanal', JSON.stringify(programacao));
+    alert('Programação semanal salva!');
+}
+
+function limparTabelaProgramacaoSemanal() {
+    const linhas = document.querySelectorAll('#tabelaProgramacaoVeiculos tbody tr');
+    linhas.forEach(linha => {
+        const celulas = linha.querySelectorAll('td');
+        for (let i = 1; i < celulas.length; i++) {
+            const celula = celulas[i];
+            if (celula) {
+                const cliente = celula.querySelector('.cell-edit:nth-of-type(1)');
+                const lider = celula.querySelector('.cell-edit:nth-of-type(2)');
+                const ajudantes = celula.querySelector('.cell-edit.ajudantes');
+                if (cliente) cliente.innerText = '';
+                if (lider) lider.innerText = '';
+                if (ajudantes) ajudantes.innerText = '';
+            }
+        }
+    });
+}
+
+function mostrarInfoPorData() {
+    const datas = [
+        document.getElementById('progSegundaData').value,
+        document.getElementById('progTercaData').value,
+        document.getElementById('progQuartaData').value,
+        document.getElementById('progQuintaData').value,
+        document.getElementById('progSextaData').value,
+        document.getElementById('progSabadoData').value
+    ];
+    const veiculos = [
+        "Veículo 16", "Veículo 14", "Veículo 12", "Veículo 10", "Veículo 8", "Veículo 18"
+    ];
+    const programacao = JSON.parse(localStorage.getItem('programacaoSemanal')) || {};
+
+    veiculos.forEach((veiculo, vIdx) => {
+        const linha = document.querySelectorAll('#tabelaProgramacaoVeiculos tbody tr')[vIdx];
+        for (let dIdx = 0; dIdx < datas.length; dIdx++) {
+            const celula = linha.cells[dIdx + 1];
+            if (celula) {
+                // Limpa sempre antes de preencher
+                celula.querySelector('.cell-edit:nth-of-type(1)').innerText = '';
+                celula.querySelector('.cell-edit:nth-of-type(2)').innerText = '';
+                celula.querySelector('.cell-edit.ajudantes').innerText = '';
+                // Preenche se houver dados salvos para o veículo e data específica
+                const dataSelecionada = datas[dIdx];
+                if (dataSelecionada && programacao[veiculo] && programacao[veiculo][dataSelecionada]) {
+                    const info = programacao[veiculo][dataSelecionada];
+                    celula.querySelector('.cell-edit:nth-of-type(1)').innerText = info.cliente || '';
+                    celula.querySelector('.cell-edit:nth-of-type(2)').innerText = info.lider || '';
+                    celula.querySelector('.cell-edit.ajudantes').innerText = info.ajudantes || '';
+                }
+            }
+        }
+    });
+}
+
+function atualizarDatasProgramacao(id) {
+    const dataInicial = document.getElementById(id).value;
+    if (!dataInicial) {
+        alert("Por favor, insira uma data válida.");
+        return;
+    }
+    const data = new Date(dataInicial);
+    const idsDias = [
+        "progSegundaData",
+        "progTercaData",
+        "progQuartaData",
+        "progQuintaData",
+        "progSextaData",
+        "progSabadoData"
+    ];
+    const indexInicial = idsDias.indexOf(id);
+    for (let i = indexInicial + 1; i < idsDias.length; i++) {
+        const novaData = new Date(data);
+        novaData.setDate(data.getDate() + (i - indexInicial));
+        document.getElementById(idsDias[i]).value = novaData.toISOString().split("T")[0];
+    }
+    limparTabelaProgramacaoSemanal();
+    mostrarInfoPorData();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    [
+        'progSegundaData',
+        'progTercaData',
+        'progQuartaData',
+        'progQuintaData',
+        'progSextaData',
+        'progSabadoData'
+    ].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', function() {
+                atualizarDatasProgramacao(id);
+            });
+        }
+    });
+
+    // Botão para salvar as informações manualmente
+    if (!document.getElementById('btnSalvarProgramacaoSemanal')) {
+        const btn = document.createElement('button');
+        btn.id = 'btnSalvarProgramacaoSemanal';
+        btn.innerText = 'Salvar Programação Semanal';
+        btn.style = 'margin: 16px 0 0 0; padding: 12px 20px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;';
+        btn.onclick = salvarProgramacaoSemanal;
+        const tabela = document.getElementById('tabelaProgramacaoVeiculos');
+        tabela.parentElement.parentElement.appendChild(btn);
+    }
+
+    limparTabelaProgramacaoSemanal();
+    mostrarInfoPorData();
+});
+</script>
+<div id="apontamentoProducaoScreen" class="screen">
+    <h2 style="text-align:center; color:#961c1c; font-size:28px; margin-bottom:20px;">Apontamento de Produção</h2>
+    <div style="background:#fff; padding:24px; border-radius:16px; box-shadow:0 4px 16px rgba(150,28,28,0.10); margin-bottom:32px;">
+        <h3 style="color:#34495e; font-size:22px; margin-bottom:18px; font-weight:bold; text-align:center;">Produção Semanal</h3>
+        <div style="overflow-x:auto;">
+            <table id="tabelaApontamentoProducao" style="width:100%; border-collapse:collapse; text-align:center; font-size:16px; background:#fafbfc; border-radius:12px; box-shadow:0 2px 8px rgba(150,28,28,0.06);">
+                <thead>
+                    <tr style="background:linear-gradient(90deg,#961c1c 80%,#c0392b 100%); color:white;">
+                        <th style="padding:14px 8px;">Etapa</th>
+                        <th style="padding:14px 8px;">Segunda</th>
+                        <th style="padding:14px 8px;">Terça</th>
+                        <th style="padding:14px 8px;">Quarta</th>
+                        <th style="padding:14px 8px;">Quinta</th>
+                        <th style="padding:14px 8px;">Sexta</th>
+                        <th style="padding:14px 8px;">Sábado</th>
+                      
+                        <tr style="background-color: #f4f4f4; color: #333;">
+                            <th style="padding: 15px; font-weight: bold;">Data</th>
+                            <td><input type="date" id="segundaData" onchange="atualizarDatasSemana('segundaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="tercaData" onchange="atualizarDatasSemana('tercaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="quartaData" onchange="atualizarDatasSemana('quartaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="quintaData" onchange="atualizarDatasSemana('quintaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="sextaData" onchange="atualizarDatasSemana('sextaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="sabadoData" onchange="atualizarDatasSemana('sabadoData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                        </tr>
+        </thead>
+                    <!-- 5 linhas para cada etapa -->
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Separação</td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                        <td>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div>
+                            <div contenteditable="true" style="padding:4px;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Corte</td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #030303; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #000000; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Usinagem</td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                    </tr>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Montagem</td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                    </tr>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Caixilho</td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                        <td><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="border-bottom:1px solid #ccc; padding:4px;"></div><div contenteditable="true" style="padding:4px;"></div></td>
+                    </tr>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:18px; text-align:right;">
+            <button onclick="salvarApontamentoProducao()" style="padding:10px 24px; background:#27ae60; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold;">Salvar</button>
+            <button onclick="carregarApontamentoProducao()" style="padding:10px 24px; background:#3498db; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold;">Carregar</button>
+        </div>
+    </div>
+
+    <!-- Pendências de Produção -->
+    <div style="background:#fff; padding:24px; border-radius:16px; box-shadow:0 4px 16px rgba(150,28,28,0.10); margin-bottom:32px;">
+        <h3 style="color:#042275; font-size:22px; margin-bottom:18px; font-weight:bold; text-align:center;">Pendências de Produção</h3>
+        <div style="overflow-x:auto;">
+            <table id="tabelaPendenciasProducao" style="width:100%; border-collapse:collapse; text-align:center; font-size:16px; background:#fafbfc; border-radius:12px; box-shadow:0 2px 8px rgba(150,28,28,0.06);">
+                <thead>
+                    <tr style="background:linear-gradient(90deg,#e67e22 80%,#f1c40f 100%); color:white;">
+                        <th style="padding:14px 8px;">pendencias</th>
+                        <th style="padding:14px 8px;">observaçoes</th>
+                        <th style="padding:14px 8px;">segunda</th>
+                        <th style="padding:14px 8px;">terça</th>
+                        <th style="padding:14px 8px;">quarta</th>
+                        <th style="padding:14px 8px;">quinta</th>
+                        <th style="padding:14px 8px;">sexta</th>
+                        <th style="padding:14px 8px;">sabado</th>
+                        <tr style="background-color: #f4f4f4; color: #333;">
+                            <th style="padding: 15px; font-weight: bold;">Data</th>
+                            <td><input type="date" id="segundaData" onchange="atualizarDatasSemana('segundaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="tercaData" onchange="atualizarDatasSemana('tercaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="quartaData" onchange="atualizarDatasSemana('quartaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="quintaData" onchange="atualizarDatasSemana('quintaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="sextaData" onchange="atualizarDatasSemana('sextaData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                            <td><input type="date" id="sabadoData" onchange="atualizarDatasSemana('sabadoData')" style="width:90%;padding:6px;border-radius:8px;border:1px solid #ccc;"></td>
+                        </tr>
+                    </thead>
+                    <!-- 3 linhas de exemplo -->
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Obra</td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">tipo</td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f4f4f4; font-weight:bold;">Obra</td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                        <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <label for="filtroDataPendencia" style="font-size:16px;">Filtrar por Data:</label>
+                <input type="date" id="filtroDataPendencia" style="padding:6px;border-radius:8px;border:1px solid #ccc;">
+                <button onclick="filtrarPendenciasPorData()" style="padding:8px 18px; background:#961c1c; color:white; border:none; border-radius:8px; font-size:14px;">Filtrar</button>
+                <button onclick="resetarFiltroPendencia()" style="padding:8px 18px; background:#3498db; color:white; border:none; border-radius:8px; font-size:14px;">Resetar</button>
+            </div>
+            <button onclick="salvarPendenciasProducao()" style="padding:10px 24px; background:#27ae60; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold;">Salvar Pendências</button>
+            <button onclick="carregarPendenciasProducao()" style="padding:10px 24px; background:#f39c12; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold;">Ver Pendências Antigas</button>
+        </div>
+    </div>
+    <button onclick="showScreen('paineisRotinaScreen')" style="margin-top:20px; padding:12px 20px; background-color:#961c1c; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">Voltar</button>
+</div>
+
+<script>
+// Salvar e carregar Apontamento de Produção
+function salvarApontamentoProducao() {
+    const tabela = document.getElementById("tabelaApontamentoProducao").getElementsByTagName("tbody")[0];
+    const linhas = tabela.getElementsByTagName("tr");
+    const dados = [];
+    for (let i = 0; i < linhas.length; i++) {
+        const celulas = linhas[i].getElementsByTagName("td");
+        const linha = [];
+        for (let j = 0; j < celulas.length; j++) {
+            linha.push(celulas[j].innerText);
+        }
+        dados.push(linha);
+    }
+    localStorage.setItem("apontamentoProducao", JSON.stringify(dados));
+    alert("Apontamento de produção salvo!");
+}
+function carregarApontamentoProducao() {
+    const dados = JSON.parse(localStorage.getItem("apontamentoProducao")) || [];
+    const tabela = document.getElementById("tabelaApontamentoProducao").getElementsByTagName("tbody")[0];
+    if (dados.length === 0) {
+        alert("Nenhum dado salvo.");
+        return;
+    }
+    for (let i = 0; i < tabela.rows.length; i++) {
+        const celulas = tabela.rows[i].cells;
+        for (let j = 0; j < celulas.length; j++) {
+            celulas[j].innerText = dados[i][j] || "";
+        }
+    }
+    alert("Apontamento carregado!");
+}
+
+// Pendências de Produção
+function salvarPendenciasProducao() {
+    const tabela = document.getElementById("tabelaPendenciasProducao").getElementsByTagName("tbody")[0];
+    const linhas = tabela.getElementsByTagName("tr");
+    const dados = [];
+    for (let i = 0; i < linhas.length; i++) {
+        const celulas = linhas[i].getElementsByTagName("td");
+        const linha = [];
+        for (let j = 0; j < celulas.length; j++) {
+            if (celulas[j].querySelector("input")) {
+                linha.push(celulas[j].querySelector("input").value);
+            } else {
+                linha.push(celulas[j].innerText);
+            }
+        }
+        dados.push(linha);
+    }
+    localStorage.setItem("pendenciasProducao", JSON.stringify(dados));
+    alert("Pendências salvas!");
+}
+function carregarPendenciasProducao() {
+    const dados = JSON.parse(localStorage.getItem("pendenciasProducao")) || [];
+    const tabela = document.getElementById("tabelaPendenciasProducao").getElementsByTagName("tbody")[0];
+    if (dados.length === 0) {
+        alert("Nenhuma pendência salva.");
+        return;
+    }
+    for (let i = 0; i < tabela.rows.length; i++) {
+        const celulas = tabela.rows[i].cells;
+        for (let j = 0; j < celulas.length; j++) {
+            if (celulas[j].querySelector("input")) {
+                celulas[j].querySelector("input").value = dados[i][j] || "";
+            } else {
+                celulas[j].innerText = dados[i][j] || "";
+            }
+        }
+    }
+    alert("Pendências carregadas!");
+}
+
+// Filtrar pendências por data
+function filtrarPendenciasPorData() {
+    const filtro = document.getElementById("filtroDataPendencia").value;
+    const tabela = document.getElementById("tabelaPendenciasProducao").getElementsByTagName("tbody")[0];
+    for (let i = 0; i < tabela.rows.length; i++) {
+        let encontrou = false;
+        for (let j = 0; j < 8; j++) {
+            const dataCell = tabela.rows[i].cells[j].querySelector("input");
+            if (filtro && dataCell && dataCell.value === filtro) {
+                encontrou = true;
+            }
+        }
+        tabela.rows[i].style.display = (!filtro || encontrou) ? "" : "none";
+    }
+}
+function resetarFiltroPendencia() {
+    document.getElementById("filtroDataPendencia").value = "";
+    filtrarPendenciasPorData();
+}
+</script>
+<!-- ...restante do código... -->
+
+<div id="statusProducaoScreen" class="screen">
+    <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px;">Status de Produção</h2>
+    <div style="padding: 20px;">
+        <!-- Primeira Parte da Tabela -->
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 16px; margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 16px; margin-bottom: 30px;">
+                <thead>
+                    <tr style="background-color: #961c1c; color: white;">
+                        <th colspan="2" style="padding: 10px; border-right: 2px solid #fff;">Estágio</th>
+                        <th style="padding: 10px;">Separação</th>
+                        <th style="padding: 10px;">Corte</th>
+                        <th style="padding: 10px;">Usinagem</th>
+                        <th style="padding: 10px;">Montagem</th>
+                        <th style="padding: 10px;">Caixilho</th>
+                    </tr>
+                  
+                    
+                </thead>
+                <tbody>
+                <tr>
+                    <td rowspan="10" style="writing-mode: vertical-rl; transform: rotate(180deg); font-weight: bold; background-color: #961c1c; color: white; padding: 10px;">Ordem de Prioridade</td>
+                    <td style="padding: 10px;">0</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">1</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">2</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">3</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">4</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">5</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">6</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">7</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">8</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">9</td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+        <div style="margin: 20px 0; text-align: center;">
+            <button onclick="salvarDadosTabela()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Salvar Dados</button>
+            <button onclick="carregarDadosTabela()" style="padding: 10px 20px; background-color: #3498DB; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Carregar Dados</button>
+            <input type="date" id="dataInicial" style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+            <button onclick="preencherDatasAutomaticamente()" style="padding: 10px 20px; background-color: #FF9800; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Preencher Datas</button>
+        </div>
+
+        <!-- Segunda Parte da Tabela -->
+        <div style="margin-top: 40px; margin-bottom: 40px;">
+            <h2 style="
+                text-align: center;
+                background: linear-gradient(90deg, #961c1c 80%, #c0392b 100%);
+                color: white;
+                padding: 18px 0 18px 0;
+                border-radius: 16px 16px 0 0;
+                font-size: 28px;
+                letter-spacing: 1px;
+                box-shadow: 0 4px 16px rgba(150,28,28,0.10);
+                margin: 0;
+            ">
+                Ordens de Produção Finalizadas
+            </h2>
+            <table style="
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                text-align: center;
+                font-size: 16px;
+                background: #fff;
+                border-radius: 0 0 16px 16px;
+                box-shadow: 0 4px 16px rgba(150,28,28,0.08);
+                overflow: hidden;
+            ">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; font-size: 16px; margin-top: 30px; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(150,28,28,0.08); overflow: hidden;">
+            <thead>
+                <tr style="background: linear-gradient(90deg, #961c1c 80%, #c0392b 100%); color: white;">
+                    <th style="padding: 14px 8px; font-weight: bold; border-right: 2px solid #fff;">Data de Finalização 1</th>
+                    <th style="padding: 14px 8px; font-weight: bold; border-right: 2px solid #fff;">Obra e Fase 1</th>
+                    <th style="padding: 14px 8px; font-weight: bold; border-right: 2px solid #fff;">Data de Finalização 2</th>
+                    <th style="padding: 14px 8px; font-weight: bold; border-right: 2px solid #fff;">Obra e Fase 2</th>
+                    <th style="padding: 14px 8px; font-weight: bold;">Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 10 linhas, cada uma representando uma célula vertical para cada item -->
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+               </td>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <tr>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc; background: #f9f9f9;">
+                            <input type="date" class="date-finalizacao" style="padding: 8px 10px; border: 1px solid #c0392b; border-radius: 8px; font-size: 15px; background: #fff5f5; color: #961c1c; transition: box-shadow 0.2s;" onchange="animarData(this)">
+                            <span class="data-feedback" style="display:block; font-size:12px; color:#27ae60; margin-top:4px;"></span>
+                        </td>
+                        <td contenteditable="true" style="padding: 12px; border-right: 2px solid #961c1c; border-bottom: 1px solid #ccc;"></td>
+                        <td contenteditable="true" style="padding: 12px; border-bottom: 1px solid #ccc;"></td>
+                    </tr>
+                </tr>
+        
+                </tr>
+                <tr> <tr style="transition: background 0.2s;"></tr>
+                <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr>
+                </tr>
+                <tr>
+                    <tr style="transition: background 0.2s;"></tr>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                    <td contenteditable="true" style="padding: 10px; border: 1px solid #ddd;"></td>
+                </tr> 
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> 
+<div id="chegadaMateriaPrimaScreen" class="screen">
+    <h2 style="text-align: center; color: #961c1c; font-size: 28px; margin-bottom: 20px;">Chegada de Matéria-Prima para Semana</h2>
+    <div style="padding: 20px;">
+        <!-- Tabela de Chegada de Matéria-Prima -->
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background-color: white; border-radius: 12px; overflow: hidden;">
+            <thead>
+                <tr style="background-color: #961c1c; color: white;">
+                    <th style="padding: 15px; font-weight: bold;">Item</th>
+                    <th style="padding: 15px; font-weight: bold;">Clientes</th>
+                    <th style="padding: 15px; font-weight: bold;">Segunda</th>
+                    <th style="padding: 15px; font-weight: bold;">Terça</th>
+                    <th style="padding: 15px; font-weight: bold;">Quarta</th>
+                    <th style="padding: 15px; font-weight: bold;">Quinta</th>
+                    <th style="padding: 15px; font-weight: bold;">Sexta</th>
+                </tr>
+            <tr style="background-color: #f4f4f4; color: #333;">
+                <th style="padding: 15px; font-weight: bold;">Data</th>
+                <td></td>
+                <td>
+                    <input type="date" id="segundaData" onchange="atualizarDatas('segundaData')" style="width: calc(100% - 20px); padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+                <td>
+                    <input type="date" id="tercaData" onchange="atualizarDatas('tercaData')" style="width: calc(100% - 20px); padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+                <td>
+                    <input type="date" id="quartaData" onchange="atualizarDatas('quartaData')" style="width: calc(100% - 20px); padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+                <td>
+                    <input type="date" id="quintaData" onchange="atualizarDatas('quintaData')" style="width: calc(100% - 20px); padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+                <td>
+                    <input type="date" id="sextaData" onchange="atualizarDatas('sextaData')" style="width: calc(100% - 20px); padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+            </tr>
+        </thead>
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h3 style="margin-bottom: 10px; color: #333;">Filtrar Tabela</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="filtroItem" style="font-size: 16px;">Item:</label>
+                <select id="filtroItem" style="padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                    <option value="">Todos</option>
+                    <option value="Vidros">Vidros</option>
+                    <option value="Perfis">Perfis</option>
+                    <option value="Acessórios">Acessórios</option>
+                </select>
+        
+                <label for="filtroDia" style="font-size: 16px;">Dia:</label>
+                <select id="filtroDia" style="padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                    <option value="">Todos</option>
+                    <option value="Segunda">Segunda</option>
+                    <option value="Terça">Terça</option>
+                    <option value="Quarta">Quarta</option>
+                    <option value="Quinta">Quinta</option>
+                    <option value="Sexta">Sexta</option>
+                </select>
+        
+                <button onclick="filtrarTabela()" style="padding: 10px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Filtrar</button>
+                <button onclick="resetarFiltro()" style="padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">Resetar</button>
+            </div>
+        </div>
+        
+            <tbody id="tabelaChegadaMateriaPrima">
+                <tr>
+                    <td style="padding: 15px; border: 1px solid #ddd;">Vidros</td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                </tr>
+                    <td style="padding: 15px; border: 1px solid #ddd;">Perfis</td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                </tr>
+                    <td style="padding: 15px; border: 1px solid #ddd;">Acessórios</td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                    <td style="padding: 15px; border: 1px solid #ddd;">
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="border-bottom: 1px solid #ccc; padding: 5px;"></div>
+                        <div contenteditable="true" style="padding: 5px;"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <button onclick="showScreen('paineisRotinaScreen')" style="margin-top: 20px; padding: 12px 20px; background-color: #961c1c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Voltar</button>
+  
+</div>
+
+<script>
+    function atualizarDatas(id) {
+        const dataInicial = document.getElementById(id).value;
+        if (!dataInicial) {
+            alert("Por favor, insira uma data válida.");
+            return;
+        }
+
+        const data = new Date(dataInicial);
+        const idsDias = ["segundaData", "tercaData", "quartaData", "quintaData", "sextaData"];
+        const indexInicial = idsDias.indexOf(id);
+
+        // Atualiza as datas subsequentes
+        for (let i = indexInicial + 1; i < idsDias.length; i++) {
+            const novaData = new Date(data);
+            novaData.setDate(data.getDate() + (i - indexInicial));
+            document.getElementById(idsDias[i]).value = novaData.toISOString().split("T")[0];
+        }
+    }
+</script>
+
+<script>
+    function filtrarTabela() {
+        const filtroItem = document.getElementById("filtroItem").value.toLowerCase();
+        const filtroDia = document.getElementById("filtroDia").value.toLowerCase();
+        const tabela = document.getElementById("tabelaChegadaMateriaPrima");
+        const linhas = tabela.getElementsByTagName("tr");
+
+        for (let i = 0; i < linhas.length; i++) {
+            const colunas = linhas[i].getElementsByTagName("td");
+            if (colunas.length > 0) {
+                const item = colunas[0].innerText.toLowerCase();
+                const dias = {
+                    segunda: colunas[2]?.innerText.toLowerCase(),
+                    terça: colunas[3]?.innerText.toLowerCase(),
+                    quarta: colunas[4]?.innerText.toLowerCase(),
+                    quinta: colunas[5]?.innerText.toLowerCase(),
+                    sexta: colunas[6]?.innerText.toLowerCase(),
+                };
+
+                const itemMatch = !filtroItem || item.includes(filtroItem);
+                const diaMatch = !filtroDia || dias[filtroDia];
+
+                if (itemMatch && diaMatch) {
+                    linhas[i].style.display = "";
+                } else {
+                    linhas[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function resetarFiltro() {
+        document.getElementById("filtroItem").value = "";
+        document.getElementById("filtroDia").value = "";
+        filtrarTabela();
+    }
+    
+    
+</script>
+
+<script>
+        for (let i = 0; i < linhas.length; i++) {
+            const colunas = linhas[i].getElementsByTagName("td");
+            if (colunas.length > 0) {
+                const item = colunas[0].innerText.toLowerCase();
+                const dias = {
+                    segunda: colunas[2]?.innerText.toLowerCase(),
+                    terça: colunas[3]?.innerText.toLowerCase(),
+                    quarta: colunas[4]?.innerText.toLowerCase(),
+                    quinta: colunas[5]?.innerText.toLowerCase(),
+                    sexta: colunas[6]?.innerText.toLowerCase(),
+                };
+
+                const itemMatch = !filtroItem || item.includes(filtroItem);
+                const diaMatch = !filtroDia || dias[filtroDia];
+
+                if (itemMatch && diaMatch) {
+                    linhas[i].style.display = "";
+                } else {
+                    linhas[i].style.display = "none";
+                }
+            }
+        }
+    
+
+    function resetarFiltro() {
+        document.getElementById("filtroItem").value = "";
+        document.getElementById("filtroDia").value = "";
+        filtrarTabela();
+    }
+    
+    
+</script>
+
+<script>
+    // Função para salvar os dados da tabela no localStorage
+    function salvarDadosTabela() {
+        const tabela = document.querySelector("#statusProducaoScreen table tbody");
+        const linhas = tabela.querySelectorAll("tr");
+        const dados = [];
+
+        linhas.forEach((linha) => {
+            const colunas = linha.querySelectorAll("td");
+            const linhaDados = Array.from(colunas).map((coluna) => coluna.innerText.trim());
+            dados.push(linhaDados);
+        });
+
+        localStorage.setItem("dadosTabelaProducao", JSON.stringify(dados));
+        alert("Dados salvos com sucesso!");
+    }
+
+    // Função para carregar os dados salvos no localStorage
+    function carregarDadosTabela() {
+        const tabela = document.querySelector("#statusProducaoScreen table tbody");
+        const dados = JSON.parse(localStorage.getItem("dadosTabelaProducao")) || [];
+
+        tabela.innerHTML = ""; // Limpa a tabela antes de carregar os dados
+
+        dados.forEach((linhaDados) => {
+            const linha = document.createElement("tr");
+            linhaDados.forEach((dado) => {
+                const coluna = document.createElement("td");
+                coluna.contentEditable = "true";
+                coluna.style.padding = "10px";
+                coluna.style.border = "1px solid #ddd";
+                coluna.innerText = dado;
+                linha.appendChild(coluna);
+            });
+            tabela.appendChild(linha);
+        });
+
+        alert("Dados carregados com sucesso!");
+    }
+</script>
+
+<script>
+    // Função para preencher as datas automaticamente
+    function preencherDatasAutomaticamente() {
+        const dataInicialInput = document.getElementById("dataInicial");
+        const tabela = document.querySelector("#statusProducaoScreen table tbody");
+
+        if (!dataInicialInput.value) {
+            alert("Por favor, insira uma data inicial.");
+            return;
+        }
+
+        const dataInicial = new Date(dataInicialInput.value);
+
+        tabela.querySelectorAll("tr").forEach((linha, index) => {
+            const colunaData = linha.querySelector("td:nth-child(2)"); // Supondo que a segunda coluna seja de datas
+            if (colunaData) {
+                const novaData = new Date(dataInicial);
+                novaData.setDate(dataInicial.getDate() + index); // Incrementa os dias com base no índice da linha
+                colunaData.innerText = novaData.toISOString().split("T")[0];
+            }
+        });
+
+        alert("Datas preenchidas automaticamente!");
+    }
+
+    
+</script>
+
+   </body>
+   </html>
+`
